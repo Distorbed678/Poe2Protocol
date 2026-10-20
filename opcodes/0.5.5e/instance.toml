@@ -43,8 +43,12 @@ UpdateSkillTarget = 0x01a8
 UpdateSkillTargetEntity = 0x01aa
 # Sprint/dodge key down or up: u8 player, u8 held.
 SprintInput = 0x02e6
-# Not decoded yet: u8 player (sent with a dodge roll's UseSkill; sender 0x14210fd56).
-Unknown01ac = 0x01ac
+# Held skill input ended: u8 player (sender 0x14210fd40). Sent when the dodge/sprint key or an
+# attack button is released; answered by SkillInputEndAck. Replies to the skill messages above:
+# UseSkill -> UseSkillAck, UpdateSkillTarget -> UpdateSkillTargetAck, UpdateSkillTargetEntity ->
+# UpdateSkillTargetEntityAck, SkillInputEnd -> SkillInputEndAck, SkillReleased ->
+# SkillReleasedAck (docs/protocol/movement.md).
+SkillInputEnd = 0x01ac
 
 [server]
 EnableEncryption = 0x0011
@@ -81,6 +85,17 @@ SprintState = 0x02e7
 StatsUpdate = 0x01d3
 # Stats of one of an actor's skills change.
 SkillStatsUpdate = 0x01d8
+# Player component acknowledgements of the client's skill messages (absolute target cells).
+# The official server answers every UseSkill/UpdateSkillTarget/SkillInputEnd with these and never
+# sends UpdateActionTarget (0x1cb) or SetOrientation (0x1df) for movement.
+UseSkillAck = 0x01ae
+UpdateSkillTargetAck = 0x01af
+UpdateSkillTargetEntityAck = 0x01b0
+SkillInputEndAck = 0x01b1
+SkillReleasedAck = 0x01b2
+# Buffs (the sprint adds three: rows 2758, 2737, 2853) and their removal.
+BuffAdded = 0x01eb
+BuffRemoved = 0x01ec
 
 # Body sizes of client messages the server does not decode yet, so batches can be split.
 [client_body_sizes]
@@ -89,7 +104,7 @@ Unknown013d = 1
 Unknown0221 = 1
 Unknown023d = 2
 Unknown02e8 = 2
-Unknown01ac = 1
+SkillInputEnd = 1
 Unknown0351 = 1
 Unknown0016 = 5
 Unknown00fe = 2

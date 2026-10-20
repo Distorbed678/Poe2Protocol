@@ -5,7 +5,7 @@ use std::fmt::Debug;
 
 use poe_net::Reader;
 
-use crate::{Direction, Message, instance, login};
+use crate::{Direction, Message, instance, login, skill};
 
 /// A decoded message: its `{:#?}` dump, or the decode error, and the bytes left over.
 pub struct Described {
@@ -104,6 +104,14 @@ pub fn describe(name: &str, direction: Direction, body: &[u8]) -> Option<Describ
         instance::AimTarget,
         instance::SetAimTarget,
         instance::ComponentDelta,
+        skill::SkillInputEnd,
+        skill::UseSkillAck,
+        skill::UpdateSkillTargetAck,
+        skill::UpdateSkillTargetEntityAck,
+        skill::SkillInputEndAck,
+        skill::SkillReleasedAck,
+        skill::BuffAdded,
+        skill::BuffRemoved,
     )
 }
 

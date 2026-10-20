@@ -11,6 +11,7 @@ pub mod instance;
 pub mod login;
 pub mod message;
 pub mod opcodes;
+pub mod skill;
 
 pub use message::{Message, MessageError};
 pub use opcodes::{Direction, OpcodeTable, Protocol, ProtocolError};

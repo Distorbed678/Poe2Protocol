@@ -621,13 +621,13 @@ pub struct SimulationHeader {
 }
 
 impl SimulationHeader {
-    fn encode(&self, w: &mut Writer) {
+    pub fn encode(&self, w: &mut Writer) {
         w.u32(self.entity_id)
             .u32(self.unk_14)
             .u8(self.unk_18)
             .u16(self.unk_1a);
     }
-    fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
+    pub fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
         Ok(Self {
             entity_id: r.u32()?,
             unk_14: r.u32()?,
