@@ -51,6 +51,7 @@ pub fn describe(name: &str, direction: Direction, body: &[u8]) -> Option<Describ
         login::KeepAlive,
         login::KeepAliveReply,
         login::Authenticate,
+        login::Credentials,
         login::AuthenticationResult,
         login::RequestCharacterList,
         login::DeleteCharacter,

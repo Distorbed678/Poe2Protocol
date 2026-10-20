@@ -6,6 +6,8 @@
 [client]
 KeepAlive = 0x0001
 KeyExchange = 0x0002
+# Standalone (email/password) platform login: docs/re/standalone-login.md.
+Credentials = 0x0003
 Authenticate = 0x0005
 # After "Exit to character selection": u32 account id, u64 token from instance 0x174.
 ResumeSession = 0x0008

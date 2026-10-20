@@ -126,6 +126,60 @@ impl Message for Authenticate {
     }
 }
 
+/// Standalone-platform login (client serializer `0x1420e3b60`, builder `0x1420e7af0`,
+/// `docs/re/standalone-login.md`). Sent instead of [`Authenticate`] when the client platform
+/// is 0 (email/password screen).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Credentials {
+    /// Constant `2` in 0.5.5e (meaning unknown).
+    pub mode: u32,
+    /// Account name (u16 length + UTF-8, not a wstring).
+    pub account_name: String,
+    /// Same value as in [`Authenticate`].
+    pub client_hash: [u8; 32],
+    /// SHA-256 of the UTF-16LE password (`0x1421bbd70`), or (with `token_login`) the 32-byte token a previous
+    /// [`AuthenticationResult::session_token`] handed out.
+    pub password_hash: [u8; 32],
+    pub machine_hash: [u8; 32],
+    /// The "Remember Me" checkbox (1 on the token path).
+    pub save_login: u8,
+    /// 1 = `password_hash` is a saved login token.
+    pub token_login: u8,
+    /// UI language id with bit 6 set (`| 0x40`).
+    pub flags_lo: u8,
+    /// Optional login-state byte, 0 when unset.
+    pub flags_hi: u8,
+}
+
+impl Message for Credentials {
+    const NAME: &'static str = "Credentials";
+    const DIRECTION: Direction = Direction::Client;
+    fn encode(&self, w: &mut Writer) {
+        w.u32(self.mode)
+            .astring(&self.account_name)
+            .bytes(&self.client_hash)
+            .bytes(&self.password_hash)
+            .bytes(&self.machine_hash)
+            .u8(self.save_login)
+            .u8(self.token_login)
+            .u8(self.flags_lo)
+            .u8(self.flags_hi);
+    }
+    fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
+        Ok(Self {
+            mode: r.u32()?,
+            account_name: r.astring()?,
+            client_hash: r.array()?,
+            password_hash: r.array()?,
+            machine_hash: r.array()?,
+            save_login: r.u8()?,
+            token_login: r.u8()?,
+            flags_lo: r.u8()?,
+            flags_hi: r.u8()?,
+        })
+    }
+}
+
 /// Authentication result (deserializer `0x14214da60`, handler at `0x1420e829d`).
 #[derive(Debug, Clone)]
 pub struct AuthenticationResult {
@@ -186,6 +240,43 @@ mod tests {
         assert_eq!(w.len() + 2, 229);
         let back = Authenticate::decode(&mut Reader::new(w.as_slice())).unwrap();
         assert_eq!(back.ticket.len(), 0x9f);
+    }
+
+    #[test]
+    fn credentials_layout_and_round_trip() {
+        let msg = Credentials {
+            mode: 2,
+            account_name: "Tester".into(),
+            client_hash: [1; 32],
+            password_hash: [2; 32],
+            machine_hash: [3; 32],
+            save_login: 1,
+            token_login: 0,
+            flags_lo: 0x40,
+            flags_hi: 0,
+        };
+        let mut w = Writer::new();
+        msg.encode(&mut w);
+        // u32 mode + u16 name length + name + 3 x 32 + 4 flag bytes (docs/re/standalone-login.md).
+        assert_eq!(w.len(), 4 + 2 + 6 + 96 + 4);
+        assert_eq!(&w.as_slice()[..6], &[0, 0, 0, 2, 0, 6]);
+        assert_eq!(Credentials::decode(&mut Reader::new(w.as_slice())).unwrap(), msg);
+    }
+
+    #[test]
+    fn authentication_result_carries_the_session_token() {
+        let msg = AuthenticationResult {
+            account_id: 7,
+            result: 0,
+            notice: String::new(),
+            session_token: [9; 32],
+            account_flags: [0x63, 0x03],
+            account_name: "Tester".into(),
+        };
+        let mut w = Writer::new();
+        msg.encode(&mut w);
+        let back = AuthenticationResult::decode(&mut Reader::new(w.as_slice())).unwrap();
+        assert_eq!(back.session_token, [9; 32]);
     }
 }
 
