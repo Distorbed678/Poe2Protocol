@@ -210,7 +210,11 @@ impl Message for AreaInfo {
             for _ in 0..n {
                 more.push(read_stat_record(r)?);
             }
-            m.stats = Some(AreaStats { first, second, more });
+            m.stats = Some(AreaStats {
+                first,
+                second,
+                more,
+            });
         }
         Ok(m)
     }
@@ -718,7 +722,11 @@ impl Message for ChatSend {
         w.u8(self.unk_0).wstring(&self.text).u8(self.unk_1);
     }
     fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
-        Ok(Self { unk_0: r.u8()?, text: r.wstring()?, unk_1: r.u8()? })
+        Ok(Self {
+            unk_0: r.u8()?,
+            text: r.wstring()?,
+            unk_1: r.u8()?,
+        })
     }
 }
 
@@ -792,7 +800,10 @@ impl Message for ChatMessage {
         if self.flags[1] & 8 != 0 {
             w.u16(self.blob.len() as u16).bytes(&self.blob);
         }
-        w.u64(self.unk_98).u8(self.unk_a0).u8(self.items).bytes(&self.items_raw);
+        w.u64(self.unk_98)
+            .u8(self.unk_a0)
+            .u8(self.items)
+            .bytes(&self.items_raw);
     }
     fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
         let unk_10 = r.u8()?;
@@ -814,7 +825,20 @@ impl Message for ChatMessage {
         let items_raw = r.rest().to_vec();
         let n = items_raw.len();
         r.bytes(n)?;
-        Ok(Self { unk_10, sender, text, extra, flags, class, unk_a2, blob, unk_98, unk_a0, items, items_raw })
+        Ok(Self {
+            unk_10,
+            sender,
+            text,
+            extra,
+            flags,
+            class,
+            unk_a2,
+            blob,
+            unk_98,
+            unk_a0,
+            items,
+            items_raw,
+        })
     }
 }
 
@@ -1478,7 +1502,7 @@ pub struct Inventory {
     pub width: u8,
     pub height: u8,
     /// Official servers send 0x00/0x01/0x03/0x04/0x60/0x61/0x65 here
-    /// (`protocol/<version>/inventories.tsv`); none of these add bytes to the message.
+    /// (`opcodes/<version>/inventories.tsv`); none of these add bytes to the message.
     pub flags: u8,
 }
 

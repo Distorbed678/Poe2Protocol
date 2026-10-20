@@ -5,6 +5,20 @@ use std::{
 
 use serde::Deserialize;
 
+/// The opcode tables of each supported client version, compiled in so consumers (the client
+/// DLL, which has no `opcodes/` directory next to it) don't need `include_str!` paths into
+/// this repository. The servers load the same files from disk with [`Protocol::load`].
+pub mod v0_5_5e {
+    /// Client 0.5.5e: login channel.
+    pub const LOGIN_TOML: &str = include_str!("../../opcodes/0.5.5e/login.toml");
+    /// Client 0.5.5e: instance channel.
+    pub const INSTANCE_TOML: &str = include_str!("../../opcodes/0.5.5e/instance.toml");
+    /// Client 0.5.5e: HNC key derivation table.
+    pub const HNC_TOML: &str = include_str!("../../opcodes/0.5.5e/hnc.toml");
+    /// Client 0.5.5e: inventories an official server creates at area entry.
+    pub const INVENTORIES_TSV: &str = include_str!("../../opcodes/0.5.5e/inventories.tsv");
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum ProtocolError {
     #[error("reading {path}: {source}")]
@@ -219,7 +233,7 @@ mod tests {
 
     #[test]
     fn repo_protocol_loads() {
-        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../protocol/0.5.5e");
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes/0.5.5e");
         let p = Protocol::load(&dir).unwrap();
         let id = p.login.id(Direction::Client, "KeyExchange").unwrap();
         assert_eq!(p.login.name(Direction::Client, id), Some("KeyExchange"));
@@ -227,6 +241,23 @@ mod tests {
         // XOR with zeros gives the table, then the swaps apply.
         let k = p.hnc.derive(&[0; 64]);
         assert_eq!(k[0x15], 0xe5);
+    }
+
+    #[test]
+    fn builtin_constants_match_the_files() {
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes/0.5.5e");
+        for (name, text) in [
+            ("login.toml", v0_5_5e::LOGIN_TOML),
+            ("instance.toml", v0_5_5e::INSTANCE_TOML),
+            ("hnc.toml", v0_5_5e::HNC_TOML),
+            ("inventories.tsv", v0_5_5e::INVENTORIES_TSV),
+        ] {
+            assert_eq!(std::fs::read_to_string(dir.join(name)).unwrap(), text);
+        }
+        let login = OpcodeTable::parse("login", v0_5_5e::LOGIN_TOML).unwrap();
+        login.check_duplicates(v0_5_5e::LOGIN_TOML).unwrap();
+        assert!(login.id(Direction::Client, "KeyExchange").is_ok());
+        OpcodeTable::parse("instance", v0_5_5e::INSTANCE_TOML).unwrap();
     }
 
     #[test]

@@ -7,7 +7,7 @@ use crate::{Direction, OpcodeTable, ProtocolError};
 /// A message body. The opcode is not part of the body; it comes from the opcode table by
 /// [`Message::NAME`].
 pub trait Message: Sized {
-    /// Name in `protocol/<version>/<channel>.toml`.
+    /// Name in `opcodes/<version>/<channel>.toml`.
     const NAME: &'static str;
     /// Which side sends it.
     const DIRECTION: Direction;

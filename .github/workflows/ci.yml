@@ -1,0 +1,26 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      # Warnings are reported but do not fail the build yet (existing code has a few).
+      - name: clippy (no tokio)
+        run: cargo clippy --workspace --all-targets -- -W clippy::all
+      - name: clippy (tokio feature)
+        run: cargo clippy --workspace --all-targets --features poe-net/tokio -- -W clippy::all
+      - name: test (no tokio)
+        run: cargo test --workspace
+      - name: test (tokio feature)
+        run: cargo test --workspace --features poe-net/tokio
