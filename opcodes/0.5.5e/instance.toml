@@ -75,6 +75,8 @@ AddObject = 0x02f7
 MoveDirectionUpdate = 0x0064
 # An entity starts an action (skill id, target), handled by the Actor component.
 StartAction = 0x01c8
+# Empty action event sent with every roll start (the client only decrements a counter).
+ActionEvent = 0x01ca
 # New target location of an entity's current action.
 UpdateActionTarget = 0x01cb
 # Positioned: facing angle + lock (the server turns the player toward the cursor with it).
