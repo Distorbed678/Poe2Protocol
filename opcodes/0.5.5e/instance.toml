@@ -116,6 +116,8 @@ EntityWake = 0x01c6
 EntitySleep = 0x01c7
 RemoveObject = 0x02fa
 PresenceChanged = 0x0271
+# Party invitation security code of the local player (0 at every entry): u8 local, u32.
+SetPartyInvitationCode = 0x00c4
 # Social list, party and trade replies.
 SocialEntry = 0x00c6
 SocialRemove = 0x00c7

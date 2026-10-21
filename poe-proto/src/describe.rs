@@ -110,6 +110,7 @@ pub fn describe(name: &str, direction: Direction, body: &[u8]) -> Option<Describ
         remote::EntitySleep,
         remote::RemoveObject,
         remote::PresenceChanged,
+        remote::SetPartyInvitationCode,
         remote::PartyInvite,
         remote::PartyInviteCancel,
         remote::SocialEntry,

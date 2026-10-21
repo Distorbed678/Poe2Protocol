@@ -85,6 +85,29 @@ impl Message for PresenceChanged {
     }
 }
 
+/// S→C `0x00c4` (class `0x1430a2fa0`, handler case `0x1420ee915`): `u8 local player, u32
+/// code`. The client logs "InstanceClientSetSelfPartyInvitationSecurityCode = N" and stores it
+/// in the session (`+0x3ec0`). Official servers send 0 in the entry batch of every area.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct SetPartyInvitationCode {
+    pub local_index: u8,
+    pub code: u32,
+}
+
+impl Message for SetPartyInvitationCode {
+    const NAME: &'static str = "SetPartyInvitationCode";
+    const DIRECTION: Direction = Direction::Server;
+    fn encode(&self, w: &mut Writer) {
+        w.u8(self.local_index).u32(self.code);
+    }
+    fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
+        Ok(Self {
+            local_index: r.u8()?,
+            code: r.u32()?,
+        })
+    }
+}
+
 /// C→S `0x00b6`: invite a character to the party (`/invite`, the social panel, the player
 /// context menu; chat command id `0x16`, sender `0x142110810`): `u8 local player, wstring
 /// character name`.
@@ -590,6 +613,9 @@ mod tests {
         assert_eq!((w.header.entity_id, w.header.unk_14), (29, 12013));
         let p: PresenceChanged = round_trip("01010100");
         assert_eq!(p.unk, [1, 1, 1, 0]);
+        // Sent in every entry batch.
+        let c: SetPartyInvitationCode = round_trip("0100000000");
+        assert_eq!((c.local_index, c.code), (1, 0));
     }
 
     #[test]
