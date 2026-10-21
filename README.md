@@ -58,4 +58,4 @@ Security issues: [SECURITY.md](SECURITY.md). Contributing: [CONTRIBUTING.md](htt
 
 ## License
 
-MIT OR Apache-2.0, at your option: [LICENSE-MIT](LICENSE-MIT), [LICENSE-APACHE](LICENSE-APACHE). Copyright (c) 2026 Distorbed678 and contributors.
+MIT: [LICENSE](LICENSE). Copyright (c) 2026 Distorbed678 and contributors.

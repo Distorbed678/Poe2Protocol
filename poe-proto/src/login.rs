@@ -96,8 +96,8 @@ pub struct Authenticate {
     pub flags_lo: u8,
     /// 32 bytes from `0x1420e7580` (client-side hash; exact meaning TBD).
     pub client_hash: [u8; 32],
-    /// 32 bytes from `0x1421c1340` (stable per machine; our server keys the dev Steam login's accounts by it when
-    /// `[accounts] dev_machine_hash_login` is on; real accounts log in with [`Credentials`]).
+    /// 32 bytes from `0x1421c1340` (stable per machine; our server does not use it: it refuses the Steam
+    /// `0x0005` login (result 9), accounts log in with [`Credentials`]).
     pub machine_hash: [u8; 32],
     pub flags_hi: u8,
     /// Platform token (Steam encrypted app ticket).
