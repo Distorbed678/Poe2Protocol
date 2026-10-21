@@ -12,7 +12,7 @@ It is its own Cargo workspace and builds standalone.
 | Path | Contents |
 |---|---|
 | `poe-net/` | Byte level: big-endian `Reader`/`Writer` with PoE string and varint encodings (`codec`), the `StreamCipher` trait with `Plain` and `Salsa20Stream` (`cipher`), `hexdump`. Behind the **`tokio`** cargo feature (off by default): the buffered TCP `Connection` (`conn`). |
-| `poe-proto/` | Message layouts (`login`, `instance`, `entity`), the opcode table loader (`opcodes`), and `describe` (decode a captured message to a readable form). |
+| `poe-proto/` | Message layouts (`login`, `instance`, `entity`, `skill`, `remote`, `player_blob`, `message`), the opcode table loader (`opcodes`), and `describe` (decode a captured message to a readable form). |
 | `opcodes/<version>/` | Per-version opcode tables: `login.toml`, `instance.toml`, `hnc.toml`, and `inventories.tsv`. Opcode numbers are never written in code. |
 
 ### Opcode tables as constants
