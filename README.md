@@ -1,7 +1,7 @@
 # Poe2Protocol
 
 The wire protocol of **Path of Exile 2 client 0.5.5e**, shared by the private server and the client DLL of
-[Poe2ModdingProject](https://github.com/Distorbed678/Poe2ModdingProject) (private repo; this repo is
+[Poe2ModdingProject](https://github.com/Distorbed678/Poe2ModdingProject) (this repo is
 consumed there as the submodule `modules/protocol`, and by [Poe2ClientHook](https://github.com/Distorbed678/Poe2ClientHook)
 as a nested submodule).
 
@@ -50,4 +50,12 @@ server's `protocol_dir` at it. Layouts that differ between versions get new type
 
 The format documentation (framing, login, instance, entities, movement) is in the main repository under `docs/protocol/`.
 
-License: MIT OR Apache-2.0.
+## Disclaimer
+
+This is an unofficial, fan-made project for personal and educational use. It is **not affiliated with, endorsed by or connected to Grinding Gear Games**; "Path of Exile" is their trademark. **No game files are distributed** in this repository (no assets, bundles, tables or executables): you need your own legal copy of the game. Use is at your own risk. The message layouts and opcode numbers here are reverse-engineering notes about the 0.5.5e client's network protocol (research, interoperability); they contain no game code or assets. Using this code against official servers is not supported.
+
+Security issues: [SECURITY.md](SECURITY.md). Contributing: [CONTRIBUTING.md](https://github.com/Distorbed678/Poe2ModdingProject/blob/main/CONTRIBUTING.md) in the main repository.
+
+## License
+
+MIT OR Apache-2.0, at your option: [LICENSE-MIT](LICENSE-MIT), [LICENSE-APACHE](LICENSE-APACHE). Copyright (c) 2026 Distorbed678 and contributors.
