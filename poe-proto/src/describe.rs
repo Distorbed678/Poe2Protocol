@@ -113,6 +113,8 @@ pub fn describe(name: &str, direction: Direction, body: &[u8]) -> Option<Describ
         remote::SetPartyInvitationCode,
         remote::PartyInvite,
         remote::PartyInviteCancel,
+        remote::PartyAccept,
+        remote::PartyDecline,
         remote::SocialEntry,
         remote::SocialRemove,
         remote::PartyUpdate,

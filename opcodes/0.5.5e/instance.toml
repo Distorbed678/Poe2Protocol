@@ -54,6 +54,11 @@ SkillInputEnd = 0x01ac
 # share a class with 0x00c7: u8 local player + wstring.
 PartyInvite = 0x00b6
 PartyInviteCancel = 0x00b7
+# Answering a party invitation: u8 local player, u32 party id. Read from the callbacks of the
+# invite popup (Ghidra, `0x140c9ef70` sends 0x00b8, `0x140c9eee0` -> `0x142110ab0` sends 0x00b9),
+# never seen on the wire (gate G-PARTY, docs/protocol/entities.md#party-and-trade-flows-wp-c3).
+PartyAccept = 0x00b8
+PartyDecline = 0x00b9
 # Trade with the player behind an entity id: u8 local player, u32 entity.
 TradeRequest = 0x00db
 TradeCancel = 0x00d2

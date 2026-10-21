@@ -154,6 +154,52 @@ impl Message for PartyInviteCancel {
     }
 }
 
+/// C→S `0x00b8`: accept a party invitation: `u8 local player, u32 party id`. **UNVERIFIED**:
+/// read from the invite popup's accept callback (`0x140c9ef70`, generic `u8 + u32` class
+/// `0x1430a2fa0`), never captured (gate G-PARTY).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PartyAccept {
+    pub local_index: u8,
+    pub party: u32,
+}
+
+impl Message for PartyAccept {
+    const NAME: &'static str = "PartyAccept";
+    const DIRECTION: Direction = Direction::Client;
+    fn encode(&self, w: &mut Writer) {
+        w.u8(self.local_index).u32(self.party);
+    }
+    fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
+        Ok(Self {
+            local_index: r.u8()?,
+            party: r.u32()?,
+        })
+    }
+}
+
+/// C→S `0x00b9`: decline a party invitation: `u8 local player, u32 party id`. **UNVERIFIED**:
+/// the decline callback `0x140c9eee0` calls `0x142110ab0`, which builds this message (and skips
+/// it when the id is the party the player is already in), never captured (gate G-PARTY).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PartyDecline {
+    pub local_index: u8,
+    pub party: u32,
+}
+
+impl Message for PartyDecline {
+    const NAME: &'static str = "PartyDecline";
+    const DIRECTION: Direction = Direction::Client;
+    fn encode(&self, w: &mut Writer) {
+        w.u8(self.local_index).u32(self.party);
+    }
+    fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
+        Ok(Self {
+            local_index: r.u8()?,
+            party: r.u32()?,
+        })
+    }
+}
+
 /// S→C `0x00c6`: a social list entry (the client keeps them in the session at `+0x27d8`, `0x210`
 /// bytes each; reader `0x141f35de0`, handler case `0x142123f1a`): sent for yourself and for every
 /// character that joins your party or friend list, and again when its area changes (a player
@@ -289,7 +335,8 @@ impl Message for SocialRemove {
 /// A member of a [`PartyUpdate`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PartyMember {
-    /// 2 = the leader (you), 0 = invited, not joined.
+    /// 2 = the leader, 1 = a member, 0 = invited, not joined (the client maps them to
+    /// leader / member / invited with `0x1421063f0`).
     pub role: u8,
     pub character: String,
     pub account: String,
@@ -309,10 +356,16 @@ pub struct PartyUpdate {
     pub unk_a: u16,
     pub unk_b: u16,
     pub party2: u32,
+    /// Index of the local player in `members` (`+0x76`; `0xff` = not in the list). The client
+    /// takes its own state from that member's role: leader, member, or invited (which makes it
+    /// show the invitation popup). 0 for the inviter in the capture; the invitee's is 1
+    /// (UNVERIFIED, from the handler `0x142106a30` case `0xc8`).
     pub unk_0: u8,
+    /// 1 in every capture (`+0x74`).
     pub unk_1: u8,
+    /// 0 in every capture (`+0x75`).
     pub unk_2: u8,
-    /// 0, or 1 after a cancel.
+    /// 0, or 1 after a cancel (`+0x77`).
     pub state: u8,
     pub members: Vec<PartyMember>,
 }
@@ -432,7 +485,9 @@ pub struct TradeState {
     pub unk_a: u32,
     /// 1 in the capture.
     pub unk_b: u32,
-    /// `0x31` in the capture.
+    /// `0x31` for the player who asked (capture). The client shows the "trade invite from"
+    /// popup (`0x1402c3cb0`) only when bit 1 is set and bit 0 clear, so the target's is
+    /// presumably `0x32` (UNVERIFIED, never captured from the target's side).
     pub unk_c: u8,
     pub other: String,
     pub unk_d: u32,
@@ -660,6 +715,10 @@ mod tests {
         assert_eq!(cancelled.state, 1);
         let gone: SocialRemove = round_trip("00000b72656d6f74655f61636374");
         assert_eq!(gone.account, "remote_acct");
+        // Read from the client's code, not captured (G-PARTY): `u8 local, u32 party id`.
+        let accept: PartyAccept = round_trip("01000cfc43");
+        let decline: PartyDecline = round_trip("01000cfc43");
+        assert_eq!((accept.party, decline.party), (0xcfc43, 0xcfc43));
         let ended: PartyEnded = round_trip("01000cfc4304");
         assert_eq!((ended.party, ended.reason), (0xcfc43, 4));
     }
