@@ -267,7 +267,9 @@ mod tests {
 
     #[test]
     fn repo_protocol_loads() {
-        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes").join(latest().version);
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../opcodes")
+            .join(latest().version);
         let p = Protocol::load(&dir).unwrap();
         let id = p.login.id(Direction::Client, "KeyExchange").unwrap();
         assert_eq!(p.login.name(Direction::Client, id), Some("KeyExchange"));
@@ -304,14 +306,19 @@ mod tests {
             }
             folders += 1;
             let version = entry.file_name().to_string_lossy().into_owned();
-            let e = embedded(&version).unwrap_or_else(|| panic!("opcodes/{version} is not in EMBEDDED"));
+            let e = embedded(&version)
+                .unwrap_or_else(|| panic!("opcodes/{version} is not in EMBEDDED"));
             for (name, text) in [
                 ("login.toml", e.login_toml),
                 ("instance.toml", e.instance_toml),
                 ("hnc.toml", e.hnc_toml),
                 ("inventories.tsv", e.inventories_tsv),
             ] {
-                assert_eq!(std::fs::read_to_string(entry.path().join(name)).unwrap(), text, "{version}/{name}");
+                assert_eq!(
+                    std::fs::read_to_string(entry.path().join(name)).unwrap(),
+                    text,
+                    "{version}/{name}"
+                );
             }
         }
         assert_eq!(folders, EMBEDDED.len());

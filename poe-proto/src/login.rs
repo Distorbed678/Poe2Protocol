@@ -262,7 +262,10 @@ mod tests {
         // u32 mode + u16 name length + name + 3 x 32 + 4 flag bytes (docs/re/standalone-login.md).
         assert_eq!(w.len(), 4 + 2 + 6 + 96 + 4);
         assert_eq!(&w.as_slice()[..6], &[0, 0, 0, 2, 0, 6]);
-        assert_eq!(Credentials::decode(&mut Reader::new(w.as_slice())).unwrap(), msg);
+        assert_eq!(
+            Credentials::decode(&mut Reader::new(w.as_slice())).unwrap(),
+            msg
+        );
     }
 
     #[test]
@@ -715,16 +718,26 @@ mod create_tests {
     fn character_created_failure_bytes() {
         use crate::backend_error as be;
         // `u16 result, u8 notify, u32 account_id`; notify stays 0 (non-zero calls the website).
-        let m = CharacterCreated { result: be::CHARACTER_NAME_ALREADY_EXISTS.code, notify: false, account_id: 0x0102_0304 };
+        let m = CharacterCreated {
+            result: be::CHARACTER_NAME_ALREADY_EXISTS.code,
+            notify: false,
+            account_id: 0x0102_0304,
+        };
         assert_eq!(bytes_of(&m), [0x00, 0x15, 0, 1, 2, 3, 4]);
-        let m = CharacterCreated { result: be::TOO_MANY_CHARACTERS.code, ..m };
+        let m = CharacterCreated {
+            result: be::TOO_MANY_CHARACTERS.code,
+            ..m
+        };
         assert_eq!(bytes_of(&m), [0x00, 0x31, 0, 1, 2, 3, 4]);
     }
 
     #[test]
     fn delete_result_carries_the_account_id() {
         use crate::backend_error as be;
-        let m = DeleteCharacterResult { result: be::CHARACTER_DOES_NOT_EXIST.code, account_id: 7 };
+        let m = DeleteCharacterResult {
+            result: be::CHARACTER_DOES_NOT_EXIST.code,
+            account_id: 7,
+        };
         assert_eq!(bytes_of(&m), [0x00, 0x10, 0, 0, 0, 7]);
         let back = DeleteCharacterResult::decode(&mut Reader::new(&bytes_of(&m))).unwrap();
         assert_eq!(back, m);
@@ -743,7 +756,14 @@ mod create_tests {
         let mut w = Writer::new();
         e.encode(&mut w);
         let back = CharacterEntry::decode(&mut Reader::new(w.as_slice())).unwrap();
-        assert_eq!((back.portrait_frame, back.portrait_variation, back.quest_state), (0x0102, 0x0304, 9));
+        assert_eq!(
+            (
+                back.portrait_frame,
+                back.portrait_variation,
+                back.quest_state
+            ),
+            (0x0102, 0x0304, 9)
+        );
         // The u16 pair +0x44, +0x46 sits right after the class byte, the quest state is last.
         assert_eq!(*w.as_slice().last().unwrap(), 9);
     }
