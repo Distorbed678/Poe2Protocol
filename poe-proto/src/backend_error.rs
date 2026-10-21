@@ -34,6 +34,10 @@ backend_errors! {
     ACCOUNT_DOES_NOT_EXIST = 5, "AccountDoesNotExist";
     /// Login: wrong password.
     INVALID_PASSWORD = 6, "InvalidPassword";
+    /// Login: the client is not the build the server speaks ("There has been a patch that you
+    /// need to update to. Please restart Path of Exile."). Used when the `client_hash` of the
+    /// login is not a known value of the server's version.
+    INVALID_PROTOCOL_VERSION = 8, "InvalidProtocolVersion";
     /// Login: this kind of login is switched off.
     NOT_ALLOWED_GAME_LOGIN = 9, "NotAllowedGameLogin";
     /// Login: the client **deletes its saved credentials file** (not on Steam), then shows
@@ -90,5 +94,6 @@ mod tests {
         assert_eq!(CHARACTER_NAME_ALREADY_EXISTS.code, 0x15);
         assert_eq!(TOO_MANY_CHARACTERS.code, 0x31);
         assert_eq!(UNEXPECTED_DISCONNECT.code, 0x0f);
+        assert_eq!(INVALID_PROTOCOL_VERSION.code, 8);
     }
 }

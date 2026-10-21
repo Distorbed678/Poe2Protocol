@@ -1,0 +1,140 @@
+# Deserializer fingerprints of client 0.5.5e (build 323943): the baseline of `cargo xtask check-build`.
+# channel, opcode, name (server-to-client, from the opcode table), fingerprint of the class's
+# deserializer (poe: xtask/src/fingerprint.rs), functions with that fingerprint, Ghidra address.
+# Written by `cargo xtask check-build <exe> --write-fingerprints` from the factory dumps
+# (scripts/re/dump_factory.py -> dumps/<version>/ghidra/*_factory*_s2c.json).
+login	0x0001	KeepAliveReply	957167635d2ec37a	1	0x1420e2e20
+login	0x0003		8df94ca7a15a6cb1	1	0x14214da60
+login	0x000a		e78c3c7bc6144109	1	0x14214e2e0
+login	0x000c		e78c3c7bc6144109	1	0x14214e2e0
+login	0x000e		e78c3c7bc6144109	1	0x14214e2e0
+login	0x0010		d8ceb5b951ade563	1	0x14214e650
+login	0x0012		6d95a827953814d9	1	0x14214ea70
+login	0x0013	CharacterCreated	ca805ae4138f1f9b	1	0x14214ece0
+login	0x0014	InstanceDetails	3e2aca80ce0ec449	1	0x14214e090
+login	0x0015	CharacterList	d88a248a40d4ac9c	1	0x14214dd00
+login	0x0016		885361432080c652	1	0x14214ef40
+login	0x0019		79f2c90ae41d3612	2	0x14214e8c0
+login	0x001a		3811f7153ae9eb7b	1	0x14214f070
+login	0x001d		885361432080c652	1	0x14214ef40
+login	0x001e		e28361f203c11417	1	0x1420e4f90
+login	0x001f		e28361f203c11417	1	0x1420e4f90
+login	0x003b		62ccaddadfe5d8fb	1	0x14214f280
+login	0x003d		b811dab31aa575d6	1	0x14214f450
+login	0x0042		ce42f305840b5d06	1	0x14214f600
+login	0x0043		e78c3c7bc6144109	1	0x14214e2e0
+login	0x0046		f4b9c6307ed5dad6	1	0x14214f8d0
+instance	0x0010		d300935b7459024b	3	0x142150970
+instance	0x0018	ChatMessage	9b4b02110990f9a2	1	0x142150ad0
+instance	0x001a		030b1916d11528b0	19	0x142151050
+instance	0x001d	PingReply	77d3230359970154	1	0x141f48c60
+instance	0x001f		d300935b7459024b	3	0x1408a2b10
+instance	0x0020		207a4849a2731854	1	0x1421519b0
+instance	0x0028		2ef553c5178358ce	3	0x142151b50
+instance	0x0044		919ed047c3dab4f9	1	0x142153110
+instance	0x0045		7ae200e9b7f02324	1	0x142153280
+instance	0x0054		c0886936aacc7baf	1	0x1421535b0
+instance	0x0066		dd17303171796617	1	0x142153de0
+instance	0x0069		571250f07f593020	1	0x141f42b70
+instance	0x006a		7102769d4dbb9b6a	1	0x1415e3b00
+instance	0x006b		599977a3ee3595d2	1	0x14086d300
+instance	0x0096		d01a8719f3194506	1	0x141f37f40
+instance	0x0097		be44f91b7bf64502	1	0x141f3c790
+instance	0x00a6		5c00ce1a1d2e10f0	1	0x141f46000
+instance	0x00a8		561ea673f784799f	1	0x142156700
+instance	0x00b3		747c36bfdd43187a	1	0x141f4a4f0
+instance	0x00b4		1ae03265fc113d40	1	0x142155ae0
+instance	0x00c4	SetPartyInvitationCode	599977a3ee3595d2	1	0x14086d300
+instance	0x00c7	SocialRemove	030b1916d11528b0	19	0x141f37e30
+instance	0x00c9	PartyEnded	da2ee808a78daccd	1	0x141f43e80
+instance	0x00ca		2429035907eac6d7	1	0x1408a3140
+instance	0x00cd		030b1916d11528b0	19	0x14215a630
+instance	0x02f0		599977a3ee3595d2	1	0x14086d300
+instance	0x02f1		cac298a5a512df20	1	0x1421552f0
+instance	0x02f6		030b1916d11528b0	19	0x142155460
+instance	0x00a3		e63389d9b22e0b73	1	0x141f6cf50
+instance	0x0065		e4b030b85ff54bd6	1	0x141f4b680
+instance	0x0064	MoveDirectionUpdate	aa16a23bd607cc2f	1	0x141f6b0e0
+instance	0x01fd		37a3113ba6da05b1	1	0x141dcb170
+instance	0x01fe	SetPause	129f504e1d0aed30	1	0x1421842a0
+instance	0x01c5	DestroyEntity	e4b030b85ff54bd6	1	0x141f4b680
+instance	0x01c6	EntityWake	e4b030b85ff54bd6	1	0x141f4b680
+instance	0x01c7	EntitySleep	e4b030b85ff54bd6	1	0x141f4b680
+instance	0x01c8	StartAction	b222c6cb77d227cf	1	0x141f696b0
+instance	0x01c9		d4b976062a97333b	1	0x141f69800
+instance	0x01ca	ActionEvent	e4b030b85ff54bd6	1	0x141f4b680
+instance	0x01d8	SkillStatsUpdate	27f8a875c1fc16d0	1	0x141f6aa80
+instance	0x01d9		27f8a875c1fc16d0	1	0x141f6aa80
+instance	0x01cb	UpdateActionTarget	3f57a9d209baf556	1	0x141f69c60
+instance	0x01cc		ef6cceed771d5fbe	1	0x141f69d60
+instance	0x01f9		6a810536847d6b11	1	0x141f69fe0
+instance	0x01fa		372fa2b7e2a765e2	1	0x141f6a440
+instance	0x01cd		51d11e6c4451f9f0	2	0x141f69870
+instance	0x01ce		c69e47f46af6d1b1	1	0x141f69940
+instance	0x01fc		1370f272c0e54e29	1	0x141f6a950
+instance	0x01d0		1663ecd37b760048	1	0x141f6cb10
+instance	0x01d1		cf3b22f42a378acd	1	0x141f6cb90
+instance	0x01d2		a87f68d12dad3619	1	0x141f6b3b0
+instance	0x01eb	BuffAdded	2ef639bfdb2dd88d	1	0x141f6bbf0
+instance	0x01ec	BuffRemoved	5485eb340f61aee6	1	0x141f6c1a0
+instance	0x01ed		4fea2d3ef6298931	1	0x141f6c230
+instance	0x0295		e9f4d56eac9a25c4	1	0x141f6ae10
+instance	0x0296		d4b976062a97333b	1	0x141f69800
+instance	0x01d3	StatsUpdate	24478db24de6a0f2	1	0x141f6dce0
+instance	0x01d4		3e24015d6e099e45	1	0x141f69990
+instance	0x01d5		3e24015d6e099e45	1	0x141f69990
+instance	0x01d6		3e24015d6e099e45	1	0x141f69990
+instance	0x01d7		e5b4a8ec400a049a	1	0x141f6de60
+instance	0x01da		3e24015d6e099e45	1	0x141f69990
+instance	0x01db		1e84761ba8a80bc9	1	0x141f69a30
+instance	0x01dc	SetAimTarget	d3ed8ab166454dd0	1	0x141f69b20
+instance	0x01dd		087558e55e8df2f7	1	0x141f6d040
+instance	0x01de		d7c47f936d09f0b9	1	0x141f6d1d0
+instance	0x01df	SetOrientation	ef7b08ad6104e566	1	0x141f6af00
+instance	0x01e6		37a3113ba6da05b1	1	0x141dcb170
+instance	0x01e7		3ca4db46f54e2f52	1	0x141f6d790
+instance	0x01e8		d4b976062a97333b	1	0x141f69800
+instance	0x01e9		d4b976062a97333b	1	0x141f69800
+instance	0x01ea		0a77ae0d1e39c3ed	1	0x141f6d9a0
+instance	0x01e0		b3c4d0ff7a2f6f0c	1	0x141f6d3c0
+instance	0x01e1		37a3113ba6da05b1	1	0x141dcb170
+instance	0x01e2		d2e7c2d5752704eb	1	0x141f6d520
+instance	0x01e3		963ad291aee59911	1	0x141f6d660
+instance	0x01e4		de8499956cd1aef6	1	0x141f6c330
+instance	0x01e5		5485eb340f61aee6	1	0x141f6c1a0
+instance	0x01f2		ea931af76d23c506	1	0x142185cf0
+instance	0x01f3		3e5eeea41f3096f0	1	0x142185f20
+instance	0x01ee		7f4d47ca4b518ef6	1	0x141f6ce50
+instance	0x01ef		37a3113ba6da05b1	1	0x141dcb170
+instance	0x01f1		755f10261c9a34aa	1	0x141f6e080
+instance	0x01f8		248419d981376f7b	1	0x141f6cca0
+instance	0x0222		e4b030b85ff54bd6	1	0x141f4b680
+instance	0x0223		22a88bbf3b029a1d	1	0x141f6ad30
+instance	0x02a4		ec4ae8a53177cc23	1	0x141f6b540
+instance	0x02a5		bb998ac0f6dd0bdc	3	0x141f6b690
+instance	0x02a6		ef7b08ad6104e566	1	0x141f6af00
+instance	0x026f		3e24015d6e099e45	1	0x141f69990
+instance	0x0270		e1b3fc0a4ace5a63	1	0x1421866c0
+instance	0x01fb		03b37fde513ab205	1	0x141f6a830
+instance	0x01af	UpdateSkillTargetAck	d2e7c2d5752704eb	1	0x141f6d520
+instance	0x01b0	UpdateSkillTargetEntityAck	cdcae80e3ba8ab8f	1	0x1421868e0
+instance	0x01b1	SkillInputEndAck	e4b030b85ff54bd6	1	0x141f4b680
+instance	0x01b2	SkillReleasedAck	b716a16340e3ba65	1	0x142186a30
+instance	0x030e		f3696e4af4bb13aa	1	0x141f6ac20
+instance	0x02ef		22a88bbf3b029a1d	1	0x141f6ad30
+instance	0x02f7	AddObject	fc9ae25ccefbaa12	1	0x141f6c420
+instance	0x02f8		460f49420335735a	1	0x141f6c620
+instance	0x02f9	ComponentDelta	492bc3de4ff6c17e	1	0x141f6c750
+instance	0x02fa	RemoveObject	e4b030b85ff54bd6	1	0x141f4b680
+instance	0x02fb		37a3113ba6da05b1	1	0x141dcb170
+instance	0x02fc		492bc3de4ff6c17e	1	0x141f6c750
+instance	0x02fd		492bc3de4ff6c17e	1	0x141f6c750
+instance	0x02fe		492bc3de4ff6c17e	1	0x141f6c750
+instance	0x02ff		175cced16121e6a2	1	0x141f6c810
+instance	0x0300		175cced16121e6a2	1	0x141f6c810
+instance	0x0302		5485eb340f61aee6	1	0x141f6c1a0
+instance	0x0316		ef7b08ad6104e566	1	0x141f6af00
+instance	0x0318		5fefdbc48b0aac6e	1	0x141f6afe0
+instance	0x0319		5fefdbc48b0aac6e	1	0x141f6afe0
+instance	0x031b		37a3113ba6da05b1	1	0x141dcb170
+instance	0x0324		07dfb57fdd592b7c	1	0x141f6b220

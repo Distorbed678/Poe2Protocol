@@ -8,6 +8,10 @@ use serde::Deserialize;
 /// The opcode tables of each supported client version, compiled in so consumers (the client
 /// DLL, which has no `opcodes/` directory next to it) don't need `include_str!` paths into
 /// this repository. The servers load the same files from disk with [`Protocol::load`].
+///
+/// [`EMBEDDED`] lists them by client version (a consumer that knows its build picks one with
+/// [`embedded`]); `v0_5_5e` is the same data under a fixed name, kept for the DLL until it
+/// selects by its resolved build.
 pub mod v0_5_5e {
     /// Client 0.5.5e: login channel.
     pub const LOGIN_TOML: &str = include_str!("../../opcodes/0.5.5e/login.toml");
@@ -17,6 +21,36 @@ pub mod v0_5_5e {
     pub const HNC_TOML: &str = include_str!("../../opcodes/0.5.5e/hnc.toml");
     /// Client 0.5.5e: inventories an official server creates at area entry.
     pub const INVENTORIES_TSV: &str = include_str!("../../opcodes/0.5.5e/inventories.tsv");
+}
+
+/// The files of one `opcodes/<version>/` folder, compiled in.
+#[derive(Debug, Clone, Copy)]
+pub struct EmbeddedOpcodes {
+    pub version: &'static str,
+    pub login_toml: &'static str,
+    pub instance_toml: &'static str,
+    pub hnc_toml: &'static str,
+    pub inventories_tsv: &'static str,
+}
+
+/// Every supported version's tables, oldest first. A new `opcodes/<version>/` folder is added
+/// here (a test fails when one is missing) and to the main repository's `versions/`.
+pub const EMBEDDED: &[EmbeddedOpcodes] = &[EmbeddedOpcodes {
+    version: "0.5.5e",
+    login_toml: include_str!("../../opcodes/0.5.5e/login.toml"),
+    instance_toml: include_str!("../../opcodes/0.5.5e/instance.toml"),
+    hnc_toml: include_str!("../../opcodes/0.5.5e/hnc.toml"),
+    inventories_tsv: include_str!("../../opcodes/0.5.5e/inventories.tsv"),
+}];
+
+/// The compiled-in tables of `version`.
+pub fn embedded(version: &str) -> Option<&'static EmbeddedOpcodes> {
+    EMBEDDED.iter().find(|e| e.version == version)
+}
+
+/// The newest compiled-in version.
+pub fn latest() -> &'static EmbeddedOpcodes {
+    EMBEDDED.last().expect("at least one version is embedded")
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -233,7 +267,7 @@ mod tests {
 
     #[test]
     fn repo_protocol_loads() {
-        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes/0.5.5e");
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes").join(latest().version);
         let p = Protocol::load(&dir).unwrap();
         let id = p.login.id(Direction::Client, "KeyExchange").unwrap();
         assert_eq!(p.login.name(Direction::Client, id), Some("KeyExchange"));
@@ -245,7 +279,7 @@ mod tests {
 
     #[test]
     fn builtin_constants_match_the_files() {
-        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes/0.5.5e");
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes/0.5.5e"); // the v0_5_5e module's folder
         for (name, text) in [
             ("login.toml", v0_5_5e::LOGIN_TOML),
             ("instance.toml", v0_5_5e::INSTANCE_TOML),
@@ -258,6 +292,30 @@ mod tests {
         login.check_duplicates(v0_5_5e::LOGIN_TOML).unwrap();
         assert!(login.id(Direction::Client, "KeyExchange").is_ok());
         OpcodeTable::parse("instance", v0_5_5e::INSTANCE_TOML).unwrap();
+    }
+
+    #[test]
+    fn every_opcode_folder_is_embedded_and_equal_to_its_files() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes");
+        let mut folders = 0;
+        for entry in std::fs::read_dir(&root).unwrap().flatten() {
+            if !entry.path().is_dir() {
+                continue;
+            }
+            folders += 1;
+            let version = entry.file_name().to_string_lossy().into_owned();
+            let e = embedded(&version).unwrap_or_else(|| panic!("opcodes/{version} is not in EMBEDDED"));
+            for (name, text) in [
+                ("login.toml", e.login_toml),
+                ("instance.toml", e.instance_toml),
+                ("hnc.toml", e.hnc_toml),
+                ("inventories.tsv", e.inventories_tsv),
+            ] {
+                assert_eq!(std::fs::read_to_string(entry.path().join(name)).unwrap(), text, "{version}/{name}");
+            }
+        }
+        assert_eq!(folders, EMBEDDED.len());
+        assert_eq!(latest().version, EMBEDDED.last().unwrap().version);
     }
 
     #[test]
