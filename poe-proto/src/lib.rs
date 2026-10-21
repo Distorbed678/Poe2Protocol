@@ -11,6 +11,8 @@ pub mod instance;
 pub mod login;
 pub mod message;
 pub mod opcodes;
+pub mod player_blob;
+pub mod remote;
 pub mod skill;
 
 pub use message::{Message, MessageError};

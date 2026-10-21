@@ -50,6 +50,14 @@ SprintInput = 0x02e6
 # SkillReleasedAck (docs/protocol/movement.md).
 SkillInputEnd = 0x01ac
 
+# Party and trade requests (docs/protocol/entities.md#party-and-trade). The two name messages
+# share a class with 0x00c7: u8 local player + wstring.
+PartyInvite = 0x00b6
+PartyInviteCancel = 0x00b7
+# Trade with the player behind an entity id: u8 local player, u32 entity.
+TradeRequest = 0x00db
+TradeCancel = 0x00d2
+
 [server]
 EnableEncryption = 0x0011
 # A chat line (players, the server): sender (channel prefix + name), text, item links.
@@ -98,6 +106,25 @@ SkillReleasedAck = 0x01b2
 # Buffs (the sprint adds three: rows 2758, 2737, 2853) and their removal.
 BuffAdded = 0x01eb
 BuffRemoved = 0x01ec
+
+# Other players and entity lifetime (docs/protocol/entities.md). 0x01c5/0x01c6/0x01c7/0x02fa
+# are simulation messages with only the 11-byte header: destroy, wake, sleep and remove an
+# entity. A player that leaves gets 0x0271, then 0x01c5 + 0x01c7 (key 0) and 0x02fa
+# (key 0xffffffff) in one frame.
+DestroyEntity = 0x01c5
+EntityWake = 0x01c6
+EntitySleep = 0x01c7
+RemoveObject = 0x02fa
+PresenceChanged = 0x0271
+# Social list, party and trade replies.
+SocialEntry = 0x00c6
+SocialRemove = 0x00c7
+PartyUpdate = 0x00c8
+PartyEnded = 0x00c9
+TradeState = 0x00d9
+TradeAck = 0x00da
+TradeEvent = 0x00e0
+NoticeMessage = 0x0019
 
 # Body sizes of client messages the server does not decode yet, so batches can be split.
 [client_body_sizes]
