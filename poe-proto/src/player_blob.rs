@@ -8,7 +8,8 @@
 //! (`Actor::tail`), so `decode` followed by `encode` returns the input bytes.
 //!
 //! Limits (decode returns an error rather than guessing): Positioned optional sections, an
-//! Animated flags byte other than `0x00`/`0x80`, buffs whose definition adds the `+0x7c`
+//! Animated flags byte other than `0x00`, `0x80`, `0x01`, `0x81` (path and/or the five floats),
+//! buffs whose definition adds the `+0x7c`
 //! u32 list or the `+0xfe` u16 (unknown without `Buffs.dat`), link record kinds other than
 //! 1 and 0x0b, Player entries (`u8 n > 0`), and Life with other than the character layout.
 
@@ -165,8 +166,13 @@ pub struct PlayerBlob {
     pub stats: PlayerStats,
     pub buffs: Vec<BuffEntry>,
     pub life: Life,
-    /// Animated flags byte (`0x80`: five f32 follow, `0x00`: none).
+    /// Animated flags byte (bit 7: five f32 follow, bit 0: the animated object's path follows
+    /// the flags; `0x80` in every official blob, local and remote). `encode` derives bit 0 from
+    /// [`PlayerBlob::animated_path`].
     pub animated_flags: u8,
+    /// The animated object (`.ao`) path of flags bit 0 (official blobs send none: the model
+    /// comes from the object type; our own player's blob sends the class's).
+    pub animated_path: Option<String>,
     /// +0x25c..+0x278 as f32 bits: (turn speed, ?, ?, facing, facing) in the observed blobs.
     pub animated: [u32; 5],
     pub player: PlayerSection,
@@ -399,14 +405,18 @@ impl PlayerBlob {
         // Animated.
         let animated_flags = r.u8()?;
         let mut animated = [0u32; 5];
-        match animated_flags {
-            0x00 => {}
-            0x80 => {
-                for a in &mut animated {
-                    *a = u32_le(&mut r)?;
-                }
+        if animated_flags & !0x81 != 0 {
+            return Err(invalid(&r, "Animated flags"));
+        }
+        let animated_path = if animated_flags & 1 != 0 {
+            Some(utf16(&mut r)?)
+        } else {
+            None
+        };
+        if animated_flags & 0x80 != 0 {
+            for a in &mut animated {
+                *a = u32_le(&mut r)?;
             }
-            _ => return Err(invalid(&r, "Animated flags")),
         }
         // Player.
         let name = utf16(&mut r)?;
@@ -493,6 +503,7 @@ impl PlayerBlob {
             buffs,
             life,
             animated_flags,
+            animated_path,
             animated,
             player,
             equipment,
@@ -562,8 +573,11 @@ impl PlayerBlob {
             w.u32_le(a).i16_le(b);
         }
         w.u8(l.flags);
-        w.u8(self.animated_flags);
-        if self.animated_flags == 0x80 {
+        w.u8((self.animated_flags & 0x80) | u8::from(self.animated_path.is_some()));
+        if let Some(path) = &self.animated_path {
+            w.utf16_le(path);
+        }
+        if self.animated_flags & 0x80 != 0 {
             for &a in &self.animated {
                 w.u32_le(a);
             }
@@ -700,6 +714,30 @@ mod tests {
             (0x0b, &[12010][..])
         );
         assert_eq!(strint.player.class, 11);
+    }
+
+    #[test]
+    fn the_animated_path_flag_round_trips() {
+        // Official blobs: flags 0x80, five floats, no path.
+        let mut blob = PlayerBlob::decode(&fixture(REMOTE_DEX)).unwrap();
+        assert_eq!(
+            (blob.animated_flags, blob.animated_path.as_deref()),
+            (0x80, None)
+        );
+        // With a path (bit 0) the path comes between the flags and the floats.
+        blob.animated_path = Some("Metadata/Characters/Dex/DexFour.ao".into());
+        let bytes = blob.encode();
+        let back = PlayerBlob::decode(&bytes).unwrap();
+        assert_eq!(back.animated_flags, 0x81);
+        assert_eq!(back.animated_path, blob.animated_path);
+        assert_eq!(back.animated, blob.animated);
+        assert_eq!(back.player, blob.player);
+        assert_eq!(back.encode(), bytes);
+        // Neither floats nor path.
+        blob.animated_path = None;
+        blob.animated_flags = 0;
+        let back = PlayerBlob::decode(&blob.encode()).unwrap();
+        assert_eq!((back.animated_flags, back.animated), (0, [0; 5]));
     }
 
     #[test]
