@@ -185,7 +185,8 @@ impl Message for Credentials {
 #[derive(Debug, Clone)]
 pub struct AuthenticationResult {
     pub account_id: u32,
-    /// 0 = success; anything else is shown as an error.
+    /// 0 = success; anything else is shown as an error. A `BackendErrors` code
+    /// ([`crate::backend_error`]).
     pub result: u16,
     /// Notice shown in a popup after login when non-empty (+0x38; language-tagged sections
     /// are supported by the client). This slot used to carry the account name, which is why
@@ -271,13 +272,16 @@ mod tests {
             result: 0,
             notice: String::new(),
             session_token: [9; 32],
-            account_flags: [0x63, 0x03],
+            account_flags: [0x23, 0x03],
             account_name: "Tester".into(),
         };
         let mut w = Writer::new();
         msg.encode(&mut w);
         let back = AuthenticationResult::decode(&mut Reader::new(w.as_slice())).unwrap();
         assert_eq!(back.session_token, [9; 32]);
+        // flags sit after the 32-byte token: 4 id + 2 result + 2 empty notice + 32 token.
+        assert_eq!(&w.as_slice()[40..42], &[0x23, 0x03]);
+        assert_eq!(back.account_flags, [0x23, 0x03]);
     }
 }
 
@@ -355,20 +359,22 @@ impl Message for ResumeSession {
 /// error (text looked up by code).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct DeleteCharacterResult {
+    /// 0 = deleted, else a `BackendErrors` code ([`crate::backend_error`]).
     pub result: u16,
-    pub unk: u32,
+    /// The account id (official replies carry it).
+    pub account_id: u32,
 }
 
 impl Message for DeleteCharacterResult {
     const NAME: &'static str = "DeleteCharacterResult";
     const DIRECTION: Direction = Direction::Server;
     fn encode(&self, w: &mut Writer) {
-        w.u16(self.result).u32(self.unk);
+        w.u16(self.result).u32(self.account_id);
     }
     fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
         Ok(Self {
             result: r.u16()?,
-            unk: r.u32()?,
+            account_id: r.u32()?,
         })
     }
 }
@@ -391,18 +397,19 @@ pub struct CharacterEntry {
     pub experience: u32,
     /// +0x4e
     pub unk_4e: u8,
-    /// +0x44
-    pub unk_44: u16,
-    /// +0x46
-    pub unk_46: u16,
+    /// +0x44: MTX portrait frame id (0 = the default frame, `SupporterIconFrame<id>` otherwise).
+    pub portrait_frame: u16,
+    /// +0x46: portrait variation row (0 = the class icon).
+    pub portrait_variation: u16,
     /// +0x48
     pub unk_48: u16,
     /// +0x4a
     pub unk_4a: u16,
     /// +0x4f
     pub unk_4f: u8,
-    /// +0x50
-    pub unk_50: u8,
+    /// +0x50: `MiniQuestStates.dat` row, for the "Act N" label of a row whose area hashes
+    /// find no area.
+    pub quest_state: u8,
 }
 
 impl CharacterEntry {
@@ -414,12 +421,12 @@ impl CharacterEntry {
             .u8(self.unk_4c)
             .u32(self.experience)
             .u8(self.unk_4e)
-            .u16(self.unk_44)
-            .u16(self.unk_46)
+            .u16(self.portrait_frame)
+            .u16(self.portrait_variation)
             .u16(self.unk_48)
             .u16(self.unk_4a)
             .u8(self.unk_4f)
-            .u8(self.unk_50);
+            .u8(self.quest_state);
     }
 
     fn decode(r: &mut Reader<'_>) -> Result<Self, DecodeError> {
@@ -431,12 +438,12 @@ impl CharacterEntry {
             unk_4c: r.u8()?,
             experience: r.u32()?,
             unk_4e: r.u8()?,
-            unk_44: r.u16()?,
-            unk_46: r.u16()?,
+            portrait_frame: r.u16()?,
+            portrait_variation: r.u16()?,
             unk_48: r.u16()?,
             unk_4a: r.u16()?,
             unk_4f: r.u8()?,
-            unk_50: r.u8()?,
+            quest_state: r.u8()?,
         })
     }
 }
@@ -669,7 +676,8 @@ impl Message for CreateCharacter {
 /// Any other result is shown as an error text.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct CharacterCreated {
-    /// 0 = success, otherwise a refusal code (looked up as an error text).
+    /// 0 = success, otherwise a `BackendErrors` code ([`crate::backend_error`]) whose table
+    /// text the client shows.
     pub result: u16,
     /// When set, the client also shows a notification for the local player; keep clear.
     pub notify: bool,
@@ -696,6 +704,49 @@ impl Message for CharacterCreated {
 #[cfg(test)]
 mod create_tests {
     use super::*;
+
+    fn bytes_of(m: &impl Message) -> Vec<u8> {
+        let mut w = Writer::new();
+        m.encode(&mut w);
+        w.as_slice().to_vec()
+    }
+
+    #[test]
+    fn character_created_failure_bytes() {
+        use crate::backend_error as be;
+        // `u16 result, u8 notify, u32 account_id`; notify stays 0 (non-zero calls the website).
+        let m = CharacterCreated { result: be::CHARACTER_NAME_ALREADY_EXISTS.code, notify: false, account_id: 0x0102_0304 };
+        assert_eq!(bytes_of(&m), [0x00, 0x15, 0, 1, 2, 3, 4]);
+        let m = CharacterCreated { result: be::TOO_MANY_CHARACTERS.code, ..m };
+        assert_eq!(bytes_of(&m), [0x00, 0x31, 0, 1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn delete_result_carries_the_account_id() {
+        use crate::backend_error as be;
+        let m = DeleteCharacterResult { result: be::CHARACTER_DOES_NOT_EXIST.code, account_id: 7 };
+        assert_eq!(bytes_of(&m), [0x00, 0x10, 0, 0, 0, 7]);
+        let back = DeleteCharacterResult::decode(&mut Reader::new(&bytes_of(&m))).unwrap();
+        assert_eq!(back, m);
+    }
+
+    #[test]
+    fn character_entry_field_order() {
+        let e = CharacterEntry {
+            name: "A".into(),
+            league: "L".into(),
+            portrait_frame: 0x0102,
+            portrait_variation: 0x0304,
+            quest_state: 9,
+            ..Default::default()
+        };
+        let mut w = Writer::new();
+        e.encode(&mut w);
+        let back = CharacterEntry::decode(&mut Reader::new(w.as_slice())).unwrap();
+        assert_eq!((back.portrait_frame, back.portrait_variation, back.quest_state), (0x0102, 0x0304, 9));
+        // The u16 pair +0x44, +0x46 sits right after the class byte, the quest state is last.
+        assert_eq!(*w.as_slice().last().unwrap(), 9);
+    }
 
     #[test]
     fn create_character_matches_capture() {
