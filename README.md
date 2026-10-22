@@ -1,7 +1,7 @@
 # Poe2Protocol
 
 The wire protocol of **Path of Exile 2 client 0.5.5e**, shared by the private server and the client DLL of
-[Poe2ModdingProject](https://github.com/Distorbed678/Poe2ModdingProject) (this repo is
+[Poe2Server](https://github.com/Distorbed678/Poe2Server) and [Poe2ModdingProject](https://github.com/Distorbed678/Poe2ModdingProject) (this repo is
 consumed there as the submodule `modules/protocol`, and by [Poe2ClientHook](https://github.com/Distorbed678/Poe2ClientHook)
 as a nested submodule).
 
@@ -13,6 +13,7 @@ It is its own Cargo workspace and builds standalone.
 |---|---|
 | `poe-net/` | Byte level: big-endian `Reader`/`Writer` with PoE string and varint encodings (`codec`), the `StreamCipher` trait with `Plain` and `Salsa20Stream` (`cipher`), `hexdump`. Behind the **`tokio`** cargo feature (off by default): the buffered TCP `Connection` (`conn`). |
 | `poe-proto/` | Message layouts (`login`, `instance`, `entity`, `skill`, `remote`, `player_blob`, `message`), the opcode table loader (`opcodes`), and `describe` (decode a captured message to a readable form). |
+| `versions/<version>.toml` | The definition of a supported client build (depots and manifests, exe checksum and fingerprint, opcode folder, signature table, client hashes, data anchors). Read by the server (`poe-config`), the hub's `cargo xtask` and, as a byte-identical copy, the launcher. Paths inside it are relative to the consumer's root (the checkout that has this repo at `modules/protocol`). |
 | `opcodes/<version>/` | Per-version opcode tables: `login.toml`, `instance.toml`, `hnc.toml`, and `inventories.tsv`. Opcode numbers are never written in code. |
 
 ### Opcode tables as constants
@@ -45,7 +46,7 @@ cargo run -p poe-proto --example check_capture -- opcodes/0.5.5e <packets.jsonl>
 
 ## Adding a client version
 
-Create `opcodes/<version>/*.toml`, add a constants module next to `v0_5_5e` in `poe-proto/src/opcodes.rs`, and point the
+Create `versions/<version>.toml` (see the existing file and docs/guides/new-game-version.md of Poe2ModdingProject), `opcodes/<version>/*.toml`, add a constants module next to `v0_5_5e` in `poe-proto/src/opcodes.rs`, and point the
 server's `protocol_dir` at it. Layouts that differ between versions get new types or version switches.
 
 The format documentation (framing, login, instance, entities, movement) is in the main repository under `docs/protocol/`.
