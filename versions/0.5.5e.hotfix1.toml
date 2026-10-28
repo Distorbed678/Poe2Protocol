@@ -20,7 +20,7 @@
 version = "0.5.5e.hotfix1"
 # supported = tested end to end; experimental = signatures resolve, layouts unchecked;
 # legacy = kept for old captures only.
-status = "experimental"
+status = "supported"
 app_id = 2694490
 # `Build Revision:` of Client.txt, a plain ASCII string in the exe's .rdata.
 build_revision = "326410"
@@ -99,12 +99,13 @@ required_features = [
 
 # What the server learns about the client. The client sends no version string; the 32-byte
 # `client_hash` of 0x0003/0x0005 is a SHA-256 of the executable file (LoginClientHash_Get32, 0.5.5e
-# 0x1420e7580). For 0.5.5e that was confirmed to be the exe's SHA-256; for this build it is
-# expected but not yet seen on the wire, so `hashes_confirmed` stays false (other hashes are
-# logged, not refused) until the in-game check (docs/guides/new-game-version.md step 6).
+# 0x1420e7580). Confirmed for this build in game on 2026-10-28: standalone token logins of the
+# hotfix client with this value listed and hashes_confirmed = false logged no "cannot be checked"
+# line, i.e. the client's hash is the exe's SHA-256. Other builds are refused
+# ([security] allow_unknown_client = false) with BackendErrors `InvalidProtocolVersion`.
 [client]
 hashes = ["d46f4c27576122afc41a428eef96b3b4c75592a16827ed8c2204508ab06a455d"]
-hashes_confirmed = false
+hashes_confirmed = true
 # Strings `check-build` must find in the exe (ASCII or UTF-16LE): command-line options, file
 # names and log lines that tools and the DLL depend on.
 strings = [
