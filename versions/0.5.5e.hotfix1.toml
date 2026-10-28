@@ -2,7 +2,7 @@
 # 0.5.5e ("Fixed a bug where minimap landscape geometry could fail to render correctly"; the servers
 # were not restarted). Same protocol, opcodes and deserializers as 0.5.5e (the opcode folder is
 # shared); 16 of 154,537 functions changed, the rest moved by small deltas
-# (dumps/0.5.5e-hotfix1/addr_map.tsv, scripts/re/addr_map.py). Game data: no table, .tgr, .dgr,
+# (dumps/0.5.5e.hotfix1/addr_map.tsv, scripts/re/addr_map.py). Game data: no table, .tgr, .dgr,
 # .tdt, .tmd or .arm changed (texture headers, a few models and effects did).
 #
 # THE one place that defines a supported client build. It lives in Poe2Protocol
@@ -17,7 +17,7 @@
 # consumer's checkout (its working directory), which has this repository at modules/protocol
 # and Poe2ClientHook at modules/client-hook: Poe2Server and the hub both do. Sections a
 # consumer does not know are ignored by it (the launcher reads depots, [exe] and [verify]).
-version = "0.5.5e-hotfix1"
+version = "0.5.5e.hotfix1"
 # supported = tested end to end; experimental = signatures resolve, layouts unchecked;
 # legacy = kept for old captures only.
 status = "experimental"
@@ -88,7 +88,7 @@ opcodes = "modules/protocol/opcodes/0.5.5e"
 
 # The client DLL's signature table and what `check-build` treats as required.
 [client_hook]
-signatures = "modules/client-hook/signatures/0.5.5e-hotfix1.toml"
+signatures = "modules/client-hook/signatures/0.5.5e.hotfix1.toml"
 # Features (of the signature table) the private server cannot do without: a missing or
 # ambiguous entry of one of them makes `check-build` exit 2. Entries of the other (research)
 # features only make it exit 1.
