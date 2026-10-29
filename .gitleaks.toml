@@ -9,7 +9,7 @@ useDefault = true
 # game client keeps for its anti-cheat side channel, kept on purpose as a documented
 # reverse-engineering constant. It is not a credential. One rule, one file.
 [[allowlists]]
-description = "HNC key_xor table: RE constant from the 0.5.5e client, not a credential (D-01)"
+description = "HNC key_xor table: RE constant from the 0.5.5e Hotfix 1 client, not a credential (D-01)"
 targetRules = ["generic-api-key"]
 paths = [
   '''^opcodes/0\.5\.5e/hnc\.toml$''',

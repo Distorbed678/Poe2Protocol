@@ -34,7 +34,7 @@ macro_rules! header_only {
 
 header_only!(
     /// S→C simulation message `0x01c5`: destroys the entity and its children (applied by
-    /// `0x142134240`, `0x141e71620(entity, 0)`: sets entity flag `+0x8c |= 1` "destroyed",
+    /// `0x1421343c0`, `0x141e717a0(entity, 0)`: sets entity flag `+0x8c |= 1` "destroyed",
     /// recurses into the children, queues the entity in the world's delete list). Official
     /// header `(entity, 0, 0, 0)`.
     DestroyEntity,
@@ -43,7 +43,7 @@ header_only!(
 
 header_only!(
     /// S→C simulation message `0x01c6`: the entity enters the wake zone (`entity +0x8d |= 4`,
-    /// `0x141e73bf0`): it starts to be updated and drawn. The header's second field is the
+    /// `0x141e73d70`): it starts to be updated and drawn. The header's second field is the
     /// **entity of the player that woke it** (`(object, player, 0, 0)`).
     EntityWake,
     "EntityWake"
@@ -51,7 +51,7 @@ header_only!(
 
 header_only!(
     /// S→C simulation message `0x01c7`: the entity leaves the wake zone (`+0x8d &= ~4`,
-    /// `0x141e73f20`). Official header `(entity, 0xffffffff, 0, 0)` for objects, `(entity,
+    /// `0x141e740a0`). Official header `(entity, 0xffffffff, 0, 0)` for objects, `(entity,
     /// 0, 0, 0)` right before a player's removal.
     EntitySleep,
     "EntitySleep"
@@ -59,7 +59,7 @@ header_only!(
 
 header_only!(
     /// S→C simulation message `0x02fa`: removes the entity from the world (the final step of
-    /// every removal; case `0x142136099` calls `0x141e71620(entity, 1)` unless it is already
+    /// every removal; case `0x142136219` calls `0x141e717a0(entity, 1)` unless it is already
     /// flagged destroyed). Official header `(entity, 0xffffffff, 0, 0)`: after all entity
     /// updates of the frame.
     RemoveObject,
@@ -68,7 +68,7 @@ header_only!(
 
 /// S→C `0x0271`: arrives once at area entry and **right before the removal of each player
 /// that leaves** (frame of its `0x01c5`/`0x02fa`). Always `01 01 01 00` so far; the handler
-/// is not identified (deserializer `0x141f45090`).
+/// is not identified (deserializer `0x141f45210`).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PresenceChanged {
     pub unk: [u8; 4],
@@ -85,7 +85,7 @@ impl Message for PresenceChanged {
     }
 }
 
-/// S→C `0x00c4` (class `0x1430a2fa0`, handler case `0x1420ee915`): `u8 local player, u32
+/// S→C `0x00c4` (class `0x1430a0938`, handler case `0x1420eea95`): `u8 local player, u32
 /// code`. The client logs "InstanceClientSetSelfPartyInvitationSecurityCode = N" and stores it
 /// in the session (`+0x3ec0`). Official servers send 0 in the entry batch of every area.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -109,7 +109,7 @@ impl Message for SetPartyInvitationCode {
 }
 
 /// C→S `0x00b6`: invite a character to the party (`/invite`, the social panel, the player
-/// context menu; chat command id `0x16`, sender `0x142110810`): `u8 local player, wstring
+/// context menu; chat command id `0x16`, sender `0x142110990`): `u8 local player, wstring
 /// character name`.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PartyInvite {
@@ -132,7 +132,7 @@ impl Message for PartyInvite {
 }
 
 /// C→S `0x00b7`: cancel the invitation of a character (chat command id `0x1a`, sender in
-/// `0x14210d630`): same body as [`PartyInvite`]. Answered by [`PartyUpdate`] (state 1),
+/// `0x14210d7b0`): same body as [`PartyInvite`]. Answered by [`PartyUpdate`] (state 1),
 /// [`SocialRemove`] and [`PartyEnded`] (reason 4).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PartyInviteCancel {
@@ -156,7 +156,7 @@ impl Message for PartyInviteCancel {
 
 /// C→S `0x00b8`: accept a party invitation: `u8 local player, u32 party id`. **UNVERIFIED**:
 /// read from the invite popup's accept callback (`0x140c9ef70`, generic `u8 + u32` class
-/// `0x1430a2fa0`), never captured (gate G-PARTY).
+/// `0x1430a0938`), never captured (gate G-PARTY).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PartyAccept {
     pub local_index: u8,
@@ -178,7 +178,7 @@ impl Message for PartyAccept {
 }
 
 /// C→S `0x00b9`: decline a party invitation: `u8 local player, u32 party id`. **UNVERIFIED**:
-/// the decline callback `0x140c9eee0` calls `0x142110ab0`, which builds this message (and skips
+/// the decline callback `0x140c9eee0` calls `0x142110c30`, which builds this message (and skips
 /// it when the id is the party the player is already in), never captured (gate G-PARTY).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PartyDecline {
@@ -201,7 +201,7 @@ impl Message for PartyDecline {
 }
 
 /// S→C `0x00c6`: a social list entry (the client keeps them in the session at `+0x27d8`, `0x210`
-/// bytes each; reader `0x141f35de0`, handler case `0x142123f1a`): sent for yourself and for every
+/// bytes each; reader `0x141f35f60`, handler case `0x14212409a`): sent for yourself and for every
 /// character that joins your party or friend list, and again when its area changes (a player
 /// that left the town through a waypoint got the new area hash).
 ///
@@ -209,7 +209,7 @@ impl Message for PartyDecline {
 /// bit 1: two more, bit 2: character data follows; 5 for characters in the same area, 4 for
 /// yourself inside an instance), then with bit 2: `wstring character, u8 level (+0x201), u8
 /// class (+0x200), u16 area, u16 area2, wstring league, u8 (+0x1fc)`, `[u16, u16]` for bit 0,
-/// `[u16, u16]` for bit 1, and a final `u8` (`0x141f4caa0`). Entries without bit 2 are not
+/// `[u16, u16]` for bit 1, and a final `u8` (`0x141f4cc20`). Entries without bit 2 are not
 /// supported.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SocialEntry {
@@ -311,7 +311,7 @@ impl Message for SocialEntry {
 }
 
 /// S→C `0x00c7`: a social entry goes away (the invited character's account after the
-/// invitation was cancelled): `u8, wstring account` (class `0x1434e51f0`, `u8` + string).
+/// invitation was cancelled): `u8, wstring account` (class `0x1434e5358`, `u8` + string).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SocialRemove {
     pub unk_0: u8,
@@ -336,7 +336,7 @@ impl Message for SocialRemove {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PartyMember {
     /// 2 = the leader, 1 = a member, 0 = invited, not joined (the client maps them to
-    /// leader / member / invited with `0x1421063f0`).
+    /// leader / member / invited with `0x142106570`).
     pub role: u8,
     pub character: String,
     pub account: String,
@@ -344,7 +344,7 @@ pub struct PartyMember {
     pub tail: u8,
 }
 
-/// S→C `0x00c8` (reader `0x142156320`): the state of the party you are in or invite from. The
+/// S→C `0x00c8` (reader `0x1421564a0`): the state of the party you are in or invite from. The
 /// server sends it three times when an invitation starts (one member, one member, then with the
 /// invitee as a second member, role 0) and once more with `state` 1 when the invitation is
 /// cancelled. The party id is the same `u32` twice and changes with a new party (`0xcfc43`,
@@ -359,7 +359,7 @@ pub struct PartyUpdate {
     /// Index of the local player in `members` (`+0x76`; `0xff` = not in the list). The client
     /// takes its own state from that member's role: leader, member, or invited (which makes it
     /// show the invitation popup). 0 for the inviter in the capture; the invitee's is 1
-    /// (UNVERIFIED, from the handler `0x142106a30` case `0xc8`).
+    /// (UNVERIFIED, from the handler `0x142106bb0` case `0xc8`).
     pub unk_0: u8,
     /// 1 in every capture (`+0x74`).
     pub unk_1: u8,
@@ -426,7 +426,7 @@ impl Message for PartyUpdate {
     }
 }
 
-/// S→C `0x00c9` (`0x141f43e80`): a party ended: `u8, u32 party id, u8 reason` (4 after
+/// S→C `0x00c9` (`0x141f44000`): a party ended: `u8, u32 party id, u8 reason` (4 after
 /// [`PartyInviteCancel`]).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PartyEnded {
@@ -473,7 +473,7 @@ impl Message for TradeRequest {
     }
 }
 
-/// S→C `0x00d9` (`0x1421574b0`): the trade request is pending: `u8 local, u32 trade id, u32,
+/// S→C `0x00d9` (`0x142157630`): the trade request is pending: `u8 local, u32 trade id, u32,
 /// u32, u8, wstring other character, u32 (0xffffffff), u16`. Sent in the frame after
 /// [`TradeRequest`].
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -521,7 +521,7 @@ impl Message for TradeState {
     }
 }
 
-/// C→S `0x00d2` (`0x141f38ce0`): cancel the trade: `u8 local, u32 trade id, u8 (0)`.
+/// C→S `0x00d2` (`0x141f38e60`): cancel the trade: `u8 local, u32 trade id, u8 (0)`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct TradeCancel {
     pub local_index: u8,
@@ -544,7 +544,7 @@ impl Message for TradeCancel {
     }
 }
 
-/// S→C `0x00da` (`0x141f38d80`): the trade is closed (echo of [`TradeCancel`]): `u8 local,
+/// S→C `0x00da` (`0x141f38f00`): the trade is closed (echo of [`TradeCancel`]): `u8 local,
 /// u32 trade id, u8 (0)`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct TradeAck {
@@ -568,7 +568,7 @@ impl Message for TradeAck {
     }
 }
 
-/// S→C `0x00e0` (`0x141f3cd50`): a trade-related event: `u8 local, u8 kind, u32 value`. Two
+/// S→C `0x00e0` (`0x141f3ced0`): a trade-related event: `u8 local, u8 kind, u32 value`. Two
 /// arrive with the cancel (`(1, 2)` then `(1, 1)`).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct TradeEvent {
@@ -592,7 +592,7 @@ impl Message for TradeEvent {
     }
 }
 
-/// S→C `0x0019` (`0x142150da0`): a system notice shown in the chat (id into a client table not
+/// S→C `0x0019` (`0x142150f20`): a system notice shown in the chat (id into a client table not
 /// identified; `0x010e` after a whisper that could not be delivered, `0x00e1` when the trade
 /// was cancelled): `u8, u16 id, u16 (0xffff), u16 (0x0200), u32, u8, u8`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]

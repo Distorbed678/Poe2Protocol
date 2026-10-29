@@ -1,7 +1,7 @@
-# Instance protocol opcodes for client 0.5.5e (u16, big-endian on the wire).
-# Client incoming factory: 0x142170380 (switch on opcode - 0x0d); full opcode -> class
-# table: dumps/0.5.5e/ghidra/instance_factory_s2c.json (local, git-ignored;
-# regenerate with scripts/re/dump_factory.py). Game-session handler: 0x142121f70.
+# Instance protocol opcodes for client 0.5.5e Hotfix 1 (u16, big-endian on the wire).
+# Client incoming factory: 0x142170500 (switch on opcode - 0x0d); full opcode -> class
+# table: dumps/0.5.5e.hotfix1/ghidra/instance_factory_s2c.json (local, git-ignored;
+# regenerate with scripts/re/dump_factory.py). Game-session handler: 0x1421220f0.
 
 [client]
 Hello = 0x000f
@@ -43,7 +43,7 @@ UpdateSkillTarget = 0x01a8
 UpdateSkillTargetEntity = 0x01aa
 # Sprint/dodge key down or up: u8 player, u8 held.
 SprintInput = 0x02e6
-# Held skill input ended: u8 player (sender 0x14210fd40). Sent when the dodge/sprint key or an
+# Held skill input ended: u8 player (sender 0x14210fec0). Sent when the dodge/sprint key or an
 # attack button is released; answered by SkillInputEndAck. Replies to the skill messages above:
 # UseSkill -> UseSkillAck, UpdateSkillTarget -> UpdateSkillTargetAck, UpdateSkillTargetEntity ->
 # UpdateSkillTargetEntityAck, SkillInputEnd -> SkillInputEndAck, SkillReleased ->
@@ -55,7 +55,7 @@ SkillInputEnd = 0x01ac
 PartyInvite = 0x00b6
 PartyInviteCancel = 0x00b7
 # Answering a party invitation: u8 local player, u32 party id. Read from the callbacks of the
-# invite popup (Ghidra, `0x140c9ef70` sends 0x00b8, `0x140c9eee0` -> `0x142110ab0` sends 0x00b9),
+# invite popup (Ghidra, `0x140c9ef70` sends 0x00b8, `0x140c9eee0` -> `0x142110c30` sends 0x00b9),
 # never seen on the wire (gate G-PARTY, docs/protocol/entities.md#party-and-trade-flows-wp-c3).
 PartyAccept = 0x00b8
 PartyDecline = 0x00b9
@@ -75,7 +75,7 @@ InitialState = 0x0023
 PlayerEntity = 0x0024
 AddInventory = 0x00df
 ExitSession = 0x0174
-# Simulation messages (second factory 0x142186aa0): queued per frame, applied by 0x142134240.
+# Simulation messages (second factory 0x142186c20): queued per frame, applied by 0x1421343c0.
 SimulationTick = 0x02f4
 # Turn an entity toward a cell or entity (the echo of the client's AimTarget).
 SetAimTarget = 0x01dc

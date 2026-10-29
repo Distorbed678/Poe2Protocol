@@ -5,23 +5,12 @@ use std::{
 
 use serde::Deserialize;
 
-/// The opcode tables of each supported client version, compiled in so consumers (the client
-/// DLL, which has no `opcodes/` directory next to it) don't need `include_str!` paths into
-/// this repository. The servers load the same files from disk with [`Protocol::load`].
-///
-/// [`EMBEDDED`] lists them by client version (a consumer that knows its build picks one with
-/// [`embedded`]); `v0_5_5e` is the same data under a fixed name, kept for the DLL until it
-/// selects by its resolved build.
-pub mod v0_5_5e {
-    /// Client 0.5.5e: login channel.
-    pub const LOGIN_TOML: &str = include_str!("../../opcodes/0.5.5e/login.toml");
-    /// Client 0.5.5e: instance channel.
-    pub const INSTANCE_TOML: &str = include_str!("../../opcodes/0.5.5e/instance.toml");
-    /// Client 0.5.5e: HNC key derivation table.
-    pub const HNC_TOML: &str = include_str!("../../opcodes/0.5.5e/hnc.toml");
-    /// Client 0.5.5e: inventories an official server creates at area entry.
-    pub const INVENTORIES_TSV: &str = include_str!("../../opcodes/0.5.5e/inventories.tsv");
-}
+// The opcode tables of each supported client version, compiled in so consumers (the client
+// DLL, which has no `opcodes/` directory next to it) don't need `include_str!` paths into
+// this repository. The servers load the same files from disk with [`Protocol::load`].
+//
+// [`EMBEDDED`] lists them by client version (a consumer that knows its build picks one with
+// [`embedded`], else [`latest`]).
 
 /// The files of one `opcodes/<version>/` folder, compiled in.
 #[derive(Debug, Clone, Copy)]
@@ -36,11 +25,11 @@ pub struct EmbeddedOpcodes {
 /// Every supported version's tables, oldest first. A new `opcodes/<version>/` folder is added
 /// here (a test fails when one is missing) and to the main repository's `versions/`.
 pub const EMBEDDED: &[EmbeddedOpcodes] = &[EmbeddedOpcodes {
-    version: "0.5.5e",
-    login_toml: include_str!("../../opcodes/0.5.5e/login.toml"),
-    instance_toml: include_str!("../../opcodes/0.5.5e/instance.toml"),
-    hnc_toml: include_str!("../../opcodes/0.5.5e/hnc.toml"),
-    inventories_tsv: include_str!("../../opcodes/0.5.5e/inventories.tsv"),
+    version: "0.5.5e.hotfix1",
+    login_toml: include_str!("../../opcodes/0.5.5e.hotfix1/login.toml"),
+    instance_toml: include_str!("../../opcodes/0.5.5e.hotfix1/instance.toml"),
+    hnc_toml: include_str!("../../opcodes/0.5.5e.hotfix1/hnc.toml"),
+    inventories_tsv: include_str!("../../opcodes/0.5.5e.hotfix1/inventories.tsv"),
 }];
 
 /// The compiled-in tables of `version`.
@@ -277,23 +266,6 @@ mod tests {
         // XOR with zeros gives the table, then the swaps apply.
         let k = p.hnc.derive(&[0; 64]);
         assert_eq!(k[0x15], 0xe5);
-    }
-
-    #[test]
-    fn builtin_constants_match_the_files() {
-        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../opcodes/0.5.5e"); // the v0_5_5e module's folder
-        for (name, text) in [
-            ("login.toml", v0_5_5e::LOGIN_TOML),
-            ("instance.toml", v0_5_5e::INSTANCE_TOML),
-            ("hnc.toml", v0_5_5e::HNC_TOML),
-            ("inventories.tsv", v0_5_5e::INVENTORIES_TSV),
-        ] {
-            assert_eq!(std::fs::read_to_string(dir.join(name)).unwrap(), text);
-        }
-        let login = OpcodeTable::parse("login", v0_5_5e::LOGIN_TOML).unwrap();
-        login.check_duplicates(v0_5_5e::LOGIN_TOML).unwrap();
-        assert!(login.id(Direction::Client, "KeyExchange").is_ok());
-        OpcodeTable::parse("instance", v0_5_5e::INSTANCE_TOML).unwrap();
     }
 
     #[test]

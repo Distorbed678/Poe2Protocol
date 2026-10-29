@@ -17,7 +17,7 @@ use poe_net::{DecodeError, Reader, Writer};
 
 use crate::entity::{Life, Pool};
 
-/// A link record of the blob header (`0x141e71420`): `u32 key, u8 tag, u8 count, [u8 kind,
+/// A link record of the blob header (`0x141e715a0`): `u32 key, u8 tag, u8 count, [u8 kind,
 /// count x value]`. The key is a hash of the link's name (not resolved yet). Kind 1 values are
 /// **entity ids** (resolved, or queued until that entity exists); kind `0x0b` values are plain
 /// integers.
@@ -36,7 +36,7 @@ pub const LINK_KEY_PLAYER_NEARBY: u32 = 0xb350_ac3a;
 /// in its owner's blob, kind `0x0b`, tag 0).
 pub const LINK_KEY_PET: u32 = 0x951d_d509;
 
-/// One buff of the Buffs component (`0x141db4f00` + body `0x141d72910`), assuming the buff
+/// One buff of the Buffs component (`0x141db5080` + body `0x141d72a90`), assuming the buff
 /// definition adds no conditional fields.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BuffEntry {
@@ -70,7 +70,7 @@ pub struct StatSet {
     pub stats: Vec<(u32, i32)>,
 }
 
-/// Stats component (`0x142180fe0`) of a player in full.
+/// Stats component (`0x142181160`) of a player in full.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlayerStats {
     /// The entity's own stats (network key = `Stats.dat` row + 1; key 1 is `level`).
@@ -86,7 +86,7 @@ pub struct PlayerStats {
     pub unk_1b5: u8,
 }
 
-/// The visual of one equipment slot (reader `0x1426c3f60`).
+/// The visual of one equipment slot (reader `0x1426c41a0`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SlotVisual {
     /// First byte of the record (the visual's id; the Actor's animation set refers to the ids
@@ -107,13 +107,13 @@ pub struct EquipSlot {
     pub visual: Option<SlotVisual>,
 }
 
-/// Player component (`0x141dcf320`).
+/// Player component (`0x141dcf4a0`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlayerSection {
     pub name: String,
     /// `Characters.IntegerId` (2 = Ranger line, 7 = Witch line, 11 observed).
     pub class: u8,
-    /// Experience (`0x141dd11e0`; the same `u32` a [`crate::entity::PlayerDelta`] updates).
+    /// Experience (`0x141dd1360`; the same `u32` a [`crate::entity::PlayerDelta`] updates).
     pub experience: u32,
     pub unk_1d0: u32,
     pub unk_1d4: u32,
@@ -141,7 +141,7 @@ pub struct AnimationSet {
     pub name: String,
 }
 
-/// Actor component (`0x142147180`): three animation sets (weapon pose names such as
+/// Actor component (`0x142147300`): three animation sets (weapon pose names such as
 /// `BowTown`, `UnarmedTown`, `default`; the two bytes of the first are the ids of equipment
 /// slots 0 and 1), then the skill container and the rest, kept raw (including the blob's
 /// final `u8` keyed-entry count). Remote players list two skills (`0x80000040` dodge roll,

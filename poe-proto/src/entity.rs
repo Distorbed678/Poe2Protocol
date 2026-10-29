@@ -1,6 +1,6 @@
 //! Entity initial-state blobs: the payload of [`crate::instance::AddObject`].
 //!
-//! The client reads a blob with `0x141e71120`:
+//! The client reads a blob with `0x141e712a0`:
 //! `u8 flags, u8 n (records, unsupported), components..., u8 m (keyed entries, unsupported)`.
 //! Each serialized component of the object type (in template order) reads its own section
 //! with its vtable +0x98 reader. Integers inside a blob are little-endian (copied raw), while
@@ -16,14 +16,14 @@ use poe_net::Writer;
 pub enum Component {
     Positioned(Positioned),
     Stats(Stats),
-    /// No active buffs (u16 count 0). Reader `0x141db4f00`.
+    /// No active buffs (u16 count 0). Reader `0x141db5080`.
     Buffs,
     Life(Life),
-    /// Reader `0x141da6540`. With a path, flags bit 0 is set and the animated object
+    /// Reader `0x141da66c0`. With a path, flags bit 0 is set and the animated object
     /// (model) is loaded from it; players need it (`Characters.AOFile`).
     Animated(Option<String>),
     Player(Player),
-    /// No inventories (two zero counts). Reader `0x141d82a40`.
+    /// No inventories (two zero counts). Reader `0x141d82bc0`.
     Inventories,
     Actor(Actor),
 }
@@ -56,7 +56,7 @@ impl Component {
 }
 
 /// Entity flags (first blob byte): bit 0 -> entity +0x8d |= 1; bit 1 -> +0x8d |= 4, the
-/// object starts in the **wake zone** (`ObjectInWakeZone`, `0x141e73bf0`): awake objects
+/// object starts in the **wake zone** (`ObjectInWakeZone`, `0x141e73d70`): awake objects
 /// are updated and drawn. A player created without it stays invisible (and so does its
 /// light, leaving the scene dark).
 pub const ENTITY_IN_WAKE_ZONE: u8 = 0x02;
@@ -73,7 +73,7 @@ pub fn initial_state_blob(flags: u8, components: &[Component]) -> Vec<u8> {
     w.into_vec()
 }
 
-/// Reader `0x141dd8820`. Without the optional sections (flags 0) it is 17 bytes.
+/// Reader `0x141dd89a0`. Without the optional sections (flags 0) it is 17 bytes.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Positioned {
     /// Grid position (+0x444/+0x448), clamped by the client to the area size.
@@ -96,7 +96,7 @@ impl Positioned {
     }
 }
 
-/// Reader `0x142180fe0`. For players the type enables a second section (6 bytes here).
+/// Reader `0x142181160`. For players the type enables a second section (6 bytes here).
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Stats {
     /// (stat key, value) pairs: varuint key, signed varint value.
@@ -116,7 +116,7 @@ impl Stats {
     }
 }
 
-/// A resource pool record of [`Life`] (`0x141d88cf0`, 14 bytes; `0x141d8bd40` adds a u32).
+/// A resource pool record of [`Life`] (`0x141d88e70`, 14 bytes; `0x141d8bec0` adds a u32).
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Pool {
     /// +0x38 (with `current` equal, the meaning of the two does not matter yet).
@@ -149,7 +149,7 @@ impl Pool {
     }
 }
 
-/// Reader `0x141d8c0e0`: six pools (long, short, long, short, long, long), a type-defined
+/// Reader `0x141d8c260`: six pools (long, short, long, short, long, long), a type-defined
 /// number of (u32, i16) entries (3 for characters), one more (u32, i16) and a flags byte.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Life {
@@ -197,7 +197,7 @@ impl Life {
     }
 }
 
-/// Reader `0x141dcf320`. 35 bytes plus the name.
+/// Reader `0x141dcf4a0`. 35 bytes plus the name.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Player {
     pub name: String,
@@ -227,14 +227,14 @@ impl Player {
     }
 }
 
-/// A Player component delta (component vfunc +0xb0, `0x141dd0a10`): a `u16` field mask
+/// A Player component delta (component vfunc +0xb0, `0x141dd0b90`): a `u16` field mask
 /// (raw, little-endian), then the fields whose bit is set, in the reader's order. Only the
 /// fields seen in official traffic are supported:
 /// - `0x0002` flag words: `u16` count (raw), then (`u8` key, `u64` bits) entries. Official
 ///   servers send the whole set (5 at entry, key 0x08 added after the first Move).
-/// - `0x0001` experience (`u32`, raw little-endian; `0x141dd11e0`). Official kills send it
+/// - `0x0001` experience (`u32`, raw little-endian; `0x141dd1360`). Official kills send it
 ///   with `0x0200` (no data, sets +0x209).
-/// - `0x0400` combat stance (`u8`, +0x20c): the component's vfunc +0x138 (`0x141dd47e0`)
+/// - `0x0400` combat stance (`u8`, +0x20c): the component's vfunc +0x138 (`0x141dd4960`)
 ///   sets +0x20d from it. While +0x20d is set the client reports its cursor cell
 ///   (`AimTarget` mode 2, `0x14016ba40`) and the player turns toward it. Official servers
 ///   send 1 at entry, 0 right after, and 1 again with the first Move.
@@ -282,10 +282,10 @@ impl PlayerDelta {
     }
 }
 
-/// Reader `0x1416d8090` (body `0x142147180`):
+/// Reader `0x1416d8210` (body `0x142147300`):
 /// - 3 × (`u8`, `u8`, `u32` length + UTF-16 string) (18 bytes when empty);
-/// - sub-reader `0x142149390`: `u8` flags, then (initial state) the skill container
-///   (`0x14218a850`): `u8` skill count + [`Skill`]s, `u8` count + 12-byte entries, `u8` count
+/// - sub-reader `0x142149510`: `u8` flags, then (initial state) the skill container
+///   (`0x14218a9d0`): `u8` skill count + [`Skill`]s, `u8` count + 12-byte entries, `u8` count
 ///   + bytes, `u32` count + entries;
 /// - the rest (flags, action state) is sent as zeros (22 bytes).
 ///
@@ -310,14 +310,14 @@ impl Actor {
     }
 }
 
-/// One skill of an actor (reader `0x142188bd0`; all integers little-endian):
+/// One skill of an actor (reader `0x142188d50`; all integers little-endian):
 /// `u32 id, u8 slot, effect, u8 flags (bit 0: u32 parent object, u32), u8 supports count +
 /// (effect, u32)[], u32, u32, u32, u8, stat list` (varuint count + (varuint stat, varint
 /// value)[]), one more stat list per additional stat set, a minion block when the granted
 /// effect has a MinionType, then `u8` (non-zero: one more stat list).
 ///
-/// The effect (`0x142683e50`): `u8, u32 GrantedEffectsPerLevel row`, then a stat-set reference
-/// (`0x142683b70`: `u8 b, [u8 if b], u32 GrantedEffectStatSetsPerLevel row`) for the base stat
+/// The effect (`0x142684090`): `u8, u32 GrantedEffectsPerLevel row`, then a stat-set reference
+/// (`0x142683db0`: `u8 b, [u8 if b], u32 GrantedEffectStatSetsPerLevel row`) for the base stat
 /// set and one per additional stat set.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Skill {

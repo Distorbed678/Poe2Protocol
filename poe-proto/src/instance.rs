@@ -1,4 +1,4 @@
-//! Instance channel messages (client 0.5.5e). See `docs/protocol/instance.md`.
+//! Instance channel messages (client 0.5.5e Hotfix 1). See `docs/protocol/instance.md`.
 
 use poe_net::{DecodeError, Reader, Writer};
 
@@ -41,7 +41,7 @@ impl Message for Hello {
 }
 
 /// Server reply to [`Hello`], sent in plaintext. On receipt the client installs the
-/// Salsa20 pair built from the `InstanceDetails` key material (handler `0x14212203e`);
+/// Salsa20 pair built from the `InstanceDetails` key material (handler `0x1421221be`);
 /// everything after it is encrypted in both directions.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct EnableEncryption {
@@ -59,7 +59,7 @@ impl Message for EnableEncryption {
     }
 }
 
-/// Area to load (serializer `0x14211c980`, handler in `0x142121f70` case 0x1e). Only the
+/// Area to load (serializer `0x14211cb00`, handler in `0x1421220f0` case 0x1e). Only the
 /// fixed header and empty vectors are supported so far; the optional blocks gated by
 /// `flags` are never sent (flags must stay 0 except where noted).
 #[derive(Debug, Clone, Default)]
@@ -84,7 +84,7 @@ pub struct AreaInfo {
     pub unk_24: u32,
     /// Client +0x70: `u16` count + big-endian `u32`s (PoE1 sent a preload list here).
     pub list_70: Vec<u32>,
-    /// Flags0 bit 7 (reader `0x14211d1c0` → `0x1423baa70`): two stat records (+0x130, +0x150)
+    /// Flags0 bit 7 (reader `0x14211d340` → `0x1423bacb0`): two stat records (+0x130, +0x150)
     /// and a list of more (+0x170); a record is a varuint count, then `u16` stat key (Stats
     /// row + 1) and varint value per stat. The terrain generator reads `map_force_topology`
     /// (2962) and `map_force_orientation` (2963) from the area's stats. Official G1_1: record
@@ -170,7 +170,7 @@ impl Message for AreaInfo {
             list_70: Vec::new(),
             stats: None,
         };
-        // Blocks without a decoder here: flags1 bits 2 (`0x14212a8f0`) and 3 (`0x14212aa00`).
+        // Blocks without a decoder here: flags1 bits 2 (`0x14212aa70`) and 3 (`0x14212ab80`).
         if m.flags[1] & 0x0c != 0 {
             return Err(DecodeError::Invalid {
                 offset: r.position(),
@@ -338,7 +338,7 @@ impl Message for TerrainHashes {
     }
 }
 
-/// Local players of this connection with their character names (serializer `0x1421578e0`;
+/// Local players of this connection with their character names (serializer `0x142157a60`;
 /// provisional meaning).
 #[derive(Debug, Clone, Default)]
 pub struct LocalPlayers {
@@ -366,27 +366,27 @@ impl Message for LocalPlayers {
 }
 
 /// Per-character state block of [`InitialState`] (client entry size 0x70). Consumed by
-/// `0x1420edaa0` for the local player whose [`PlayerState`] points at it.
+/// `0x1420edc20` for the local player whose [`PlayerState`] points at it.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CharacterState {
     /// The account's stash tabs (copied to local player +0x3a90; official new accounts: four
     /// tabs named "1".."4").
     pub stash_tabs: Vec<StashTab>,
-    /// A second tab list (local player +0x3ac0, sorted by `0x1420ec230`), presumably the guild
+    /// A second tab list (local player +0x3ac0, sorted by `0x1420ec3b0`), presumably the guild
     /// stash; empty officially.
     pub guild_tabs: Vec<StashTab>,
     /// (u32, u32) pairs at +0x30.
     pub pairs: Vec<(u32, u32)>,
     /// Wide string at +0x48.
     pub text: String,
-    /// Flag bytes at +0x68..+0x6a, copied to the local player by `0x1420edaa0`: byte 0 bits
+    /// Flag bytes at +0x68..+0x6a, copied to the local player by `0x1420edc20`: byte 0 bits
     /// 0..5 -> +0x3eca..+0x3ed0, bits 6/7 and byte 1 bit 0 -> account mode +0x3ec4; byte 1
     /// bit 1 -> +0x3ed1, bits 2..4 -> +0x3df8..+0x3dfa, bit 5 -> +0x3e32, bit 6 -> +0x3edc
     /// ([`CHARACTER_FULL_ACCESS`]), bit 7 -> +0x3edd; byte 2 bit 0 -> +0x3ede.
     pub flags: [u8; 3],
 }
 
-/// A stash tab record (reader `0x141ce2e20`, client entry 0x68 bytes). Optional fields
+/// A stash tab record (reader `0x141ce2fa0`, client entry 0x68 bytes). Optional fields
 /// follow when `flags` bit 0x20 (8 bytes, +0x00), 0x10 (`u8`, +0x3c) or 0x40 (4 bytes, +0x3f)
 /// is set; those are not supported (keep the bits clear).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -493,7 +493,7 @@ impl Default for PlayerState {
     }
 }
 
-/// Initial state (deserializer `0x142158130`, handler `0x142122eed`).
+/// Initial state (deserializer `0x1421582b0`, handler `0x14212306d`).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct InitialState {
     pub unk_10: u8,
@@ -609,7 +609,7 @@ impl Message for PlayerEntity {
     }
 }
 
-/// Header shared by simulation messages (`0x141f4b680`). The frame processor orders a
+/// Header shared by simulation messages (`0x141f4b800`). The frame processor orders a
 /// frame's messages by the last three fields.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct SimulationHeader {
@@ -656,7 +656,7 @@ impl Message for SimulationFrameValue {
 }
 
 /// S→C ping reply to the client's frame report (`0x1c`): `u16, u16, u32` (reader
-/// `0x141f48c60`). The handler (`0x142122115`) derives the latency display from the first
+/// `0x141f48de0`). The handler (`0x142122295`) derives the latency display from the first
 /// `u16`. All 32 bits of the `u32` carry the HNC side channel: bits 9..31 then 0..8, packed
 /// least significant bit first into bytes that the client decrypts with its HNC cipher. An idle
 /// channel decrypts to zero bytes, so the server sends raw keystream ([`hnc_bits`]).
@@ -682,7 +682,7 @@ impl Message for PingReply {
     }
 }
 
-/// C→S frame report, about every 100 ms (sender `0x1421211e4`, serializer `0x141f486f0`):
+/// C→S frame report, about every 100 ms (sender `0x142121364`, serializer `0x141f48870`):
 /// frames processed since the last report (world +0x680, capped at 255), and 32 HNC bits
 /// (value bits 14..31, then 0..13).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -762,8 +762,8 @@ impl Message for ChatJoinRequest {
     }
 }
 
-/// S→C `0x0018` ChatMessage (class `0x14350abb8`, reader `0x142150ad0` → `0x1421a73d0`,
-/// writer `0x1421a71d0`): `u8` (1 in official captures), then the chat line: sender (the
+/// S→C `0x0018` ChatMessage (class `0x14350ac78`, reader `0x142150c50` → `0x1421a7520`,
+/// writer `0x1421a7320`): `u8` (1 in official captures), then the chat line: sender (the
 /// channel's prefix character and the character name: `#` global, `$` trade; none = local),
 /// text (an item link is a `_` placeholder), a third string (empty), two flag bytes
 /// (+0xa3, +0xa4; +0xa4 bit 3 adds a `u16`-length blob), `u8` +0xa1 (0..8 in captures, likely
@@ -842,8 +842,8 @@ impl Message for ChatMessage {
     }
 }
 
-/// S→C chat channel joined (constructor `0x14215cb50`, reader `0x14215cc30`, handler
-/// `0x142124bca`): `u8 (+0x10), u16 channel (+0x1a), u8 trade (+0x18), u8 (+0x1c)`. Stores the
+/// S→C chat channel joined (constructor `0x14215ccd0`, reader `0x14215cdb0`, handler
+/// `0x142124d4a`): `u8 (+0x10), u16 channel (+0x1a), u8 trade (+0x18), u8 (+0x1c)`. Stores the
 /// channel in the session (trade +0x2738, global +0x2740) and ends the pending join; without
 /// it the client reports "Timeout while joining … chat".
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -882,7 +882,7 @@ pub fn hnc_bits(bytes: [u8; 4]) -> u32 {
 }
 
 /// S→C reply to the client's exit request (`0x173`, "Exit to character selection"):
-/// `u8, u32, u64` (constructor `0x14215df40`, reader `0x14215e010`). The handler broadcasts
+/// `u8, u32, u64` (constructor `0x14215e0c0`, reader `0x14215e190`). The handler broadcasts
 /// (`u32`, `u64`) to listeners (`0x1402f5e10`) and sends the exit telemetry (`0x355`). The
 /// client then reconnects to the login server and sends them back in login `0x08`
 /// ResumeSession (with zeros it sends nothing and waits): `unk_20` = account id,
@@ -912,8 +912,8 @@ impl Message for ExitSession {
     }
 }
 
-/// S→C simulation message: world pause state (reader `0x1421842a0`, applied by
-/// `0x142134240` → world vfunc +0x200 `0x14168aaf0`): bit 0 -> world +0x868 (paused: pausable
+/// S→C simulation message: world pause state (reader `0x142184420`, applied by
+/// `0x1421343c0` → world vfunc +0x200 `0x14168ac70`): bit 0 -> world +0x868 (paused: pausable
 /// entities update with dt 0), bit 1 -> +0x869; with both set the client also applies its
 /// "Pause" audio state. Reply to the client's [`PauseRequest`].
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -942,7 +942,7 @@ impl Message for SetPause {
 }
 
 /// C→S: the client asks to pause (escape menu opened, solo game) or resume: `u8, u8 paused`
-/// (class `0x1434e50f8`, fields +0x10 and +0x18). Sent as `00 00` after entering an area.
+/// (class `0x1434e52b8`, fields +0x10 and +0x18). Sent as `00 00` after entering an area.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PauseRequest {
     pub unk: u8,
@@ -964,7 +964,7 @@ impl Message for PauseRequest {
 }
 
 /// C→S `0x1b`: the client leaves the game ("Exit to log in screen" or quitting; logout
-/// routine `0x14211f540` with 0 or 2): `u8, u8` (both 0 so far, same class as PauseRequest).
+/// routine `0x14211f6c0` with 0 or 2): `u8, u8` (both 0 so far, same class as PauseRequest).
 /// Sent after [`ExitReport`], then the client closes the connection.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LeaveGame {
@@ -986,8 +986,8 @@ impl Message for LeaveGame {
     }
 }
 
-/// C→S `0x355`: client statistics sent when it leaves an instance (`0x14211fad0`;
-/// serializer `0x141f479b0`): `u8, u16 length, length bytes` (a little-endian `u16` 6 and
+/// C→S `0x355`: client statistics sent when it leaves an instance (`0x14211fc50`;
+/// serializer `0x141f47b30`): `u8, u16 length, length bytes` (a little-endian `u16` 6 and
 /// a 0x360-byte block, not decoded).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ExitReport {
@@ -1045,8 +1045,8 @@ impl Message for MoveDirection {
     }
 }
 
-/// S→C simulation message: an entity's WASD movement (reader `0x141f6b0e0`, applied by the
-/// Actor component `0x142149640`): header, `varint dir x, varint dir y, varint grid x,
+/// S→C simulation message: an entity's WASD movement (reader `0x141f6b260`, applied by the
+/// Actor component `0x1421497c0`): header, `varint dir x, varint dir y, varint grid x,
 /// varint grid y, u8`. With a non-zero direction the client first moves the entity to the
 /// given grid cell if it is elsewhere (snaps, or blends when close), then moves it in that
 /// direction every frame until a zero direction arrives.
@@ -1058,7 +1058,7 @@ pub struct MoveDirectionUpdate {
     pub grid_x: i32,
     pub grid_y: i32,
     /// Official servers send `0xf1` in nearly all of these (0 in a few answers to
-    /// single-axis input); the client's handler does not read it (`0x142149640`).
+    /// single-axis input); the client's handler does not read it (`0x1421497c0`).
     pub unk_30: u8,
 }
 
@@ -1085,7 +1085,7 @@ impl Message for MoveDirectionUpdate {
     }
 }
 
-/// C→S: use a skill (class vtable `0x1434e5b40`, built by `0x14210f920`, body `0x141ecdd00`):
+/// C→S: use a skill (class vtable `0x1434e5ae8`, built by `0x14210faa0`, body `0x141ecde80`):
 /// `u8 local player, u32 skill id, u16 flags, u8, u8 target flags` (bit 3: a target entity
 /// follows), `[u32 target entity]`, `i32 x, i32 y`. Without a target entity the location is
 /// relative to the player's grid cell. Left click in click-to-move mode uses the Move skill
@@ -1164,8 +1164,8 @@ impl Message for SkillReleased {
     }
 }
 
-/// S→C simulation message: an entity starts an action (reader `0x141f696b0`, applied by the
-/// Actor component `0x142149640`): header, `u16 flags` (bit 7: a `u32` target entity follows),
+/// S→C simulation message: an entity starts an action (reader `0x141f69830`, applied by the
+/// Actor component `0x1421497c0`): header, `u16 flags` (bit 7: a `u32` target entity follows),
 /// `varint x, varint y` (the entity's grid cell when it starts), `varint target x, varint
 /// target y` (grid), `u32 skill id, u16 action id, u8`. The client creates the action from the
 /// actor's skill with that id (Move: walks to the target, DodgeRoll: rolls towards it).
@@ -1223,7 +1223,7 @@ impl Message for StartAction {
     }
 }
 
-/// C→S: new target for a running skill, relative to the player's cell (sender `0x14210fbb0`):
+/// C→S: new target for a running skill, relative to the player's cell (sender `0x14210fd30`):
 /// `u8 local player, i32 x, i32 y, u32 skill id`. Sent about every 70 ms while a skill's input
 /// is held, e.g. a dodge roll or sprint steering towards the cursor. In lockstep the client
 /// does not apply it itself; the server answers with [`UpdateActionTarget`].
@@ -1275,7 +1275,7 @@ impl Message for UpdateSkillTargetEntity {
 }
 
 /// S→C simulation message: new target location of an entity's current action (reader
-/// `0x141f69c60`, Actor handler case `0x1cb`): header, `u16 action id, i32 x, i32 y`
+/// `0x141f69de0`, Actor handler case `0x1cb`): header, `u16 action id, i32 x, i32 y`
 /// (absolute grid cell). Applied when the id matches the running action.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct UpdateActionTarget {
@@ -1302,8 +1302,8 @@ impl Message for UpdateActionTarget {
     }
 }
 
-/// S→C simulation message for the Positioned component (`0x1df`, reader `0x141f6af00`,
-/// handler `0x141dda640`): header, `f32 angle, u8 locked`. The client sets the entity's facing
+/// S→C simulation message for the Positioned component (`0x1df`, reader `0x141f6b080`,
+/// handler `0x141dda7c0`): header, `f32 angle, u8 locked`. The client sets the entity's facing
 /// (Positioned +0x44c, radians: `atan2(dy, dx) + π/2` of a grid direction) unless it is locked,
 /// then sets or clears the lock (+0x1e5 bit 1); while locked, movement does not turn it.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -1351,9 +1351,9 @@ impl Message for SprintInput {
     }
 }
 
-/// S→C simulation message: whether the entity's sprint key is held (reader `0x141dcb170`,
-/// Actor vfunc +0x3d8 `0x141e5c070`: Actor +0x2a2 bit 5). A dodge roll that ends while it is
-/// set turns into a sprint (`0x141b76c20`); clearing it ends the sprint.
+/// S→C simulation message: whether the entity's sprint key is held (reader `0x141dcb2f0`,
+/// Actor vfunc +0x3d8 `0x141e5c1f0`: Actor +0x2a2 bit 5). A dodge roll that ends while it is
+/// set turns into a sprint (`0x141b76da0`); clearing it ends the sprint.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct SprintState {
     pub header: SimulationHeader,
@@ -1375,8 +1375,8 @@ impl Message for SprintState {
     }
 }
 
-/// S→C simulation message: an entity's stats change (reader `0x141f6dce0`, Stats component
-/// handler `0x142181f20` case `0x1d3`): header, `u8 set` (0 = the entity's own stats), varuint
+/// S→C simulation message: an entity's stats change (reader `0x141f6de60`, Stats component
+/// handler `0x1421820a0` case `0x1d3`): header, `u8 set` (0 = the entity's own stats), varuint
 /// count, then (varuint stat key, varint value) pairs. Keys are `Stats.dat` row + 1.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct StatsUpdate {
@@ -1407,7 +1407,7 @@ impl Message for StatsUpdate {
     }
 }
 
-/// S→C simulation message: stats of one of an actor's skills change (reader `0x141f6aa80`,
+/// S→C simulation message: stats of one of an actor's skills change (reader `0x141f6ac00`,
 /// Actor handler case `0x1d8`): header, `u32 skill id, u8 stat container` (0 = the skill's own
 /// stats), varuint count, then (varuint stat key, varint value) pairs.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -1462,7 +1462,7 @@ impl Message for SimulationTick {
 }
 
 /// Spawns an entity: object type key (MurmurHash2 of its metadata path) and its initial
-/// state blob (read by `0x141e71120`; layout in `docs/protocol/entities.md`).
+/// state blob (read by `0x141e712a0`; layout in `docs/protocol/entities.md`).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct AddObject {
     pub header: SimulationHeader,
@@ -1491,8 +1491,8 @@ impl Message for AddObject {
     }
 }
 
-/// An inventory (client class vtable `0x143573a28`; serializer `0x1425aa290`, reader
-/// `0x1425aa550`). Items are not supported yet.
+/// An inventory (client class vtable `0x143573b78`; serializer `0x1425aa4d0`, reader
+/// `0x1425aa790`). Items are not supported yet.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Inventory {
     /// +0x140 (provisional: `Inventories.InventoryIdKey`).
@@ -1535,7 +1535,7 @@ impl Inventory {
 }
 
 /// Creates (or replaces) a server inventory for a local player (handler in the per-player
-/// processor, registry insert `0x141cf1da0`).
+/// processor, registry insert `0x141cf1f20`).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct AddInventory {
     pub unk_10: u8,
@@ -1604,7 +1604,7 @@ impl Message for AimTarget {
     }
 }
 
-/// S→C `0x01dc` (Actor message, handler `0x142149640` case `0x1dc`): turn the entity toward a
+/// S→C `0x01dc` (Actor message, handler `0x1421497c0` case `0x1dc`): turn the entity toward a
 /// cell (`kind` 0) or an entity (`kind` 1, its id in `entity`). Header `(0, 0, 0)` on official
 /// servers. Official servers send it for the player's [`AimTarget`] positions.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -1632,7 +1632,7 @@ impl Message for SetAimTarget {
     }
 }
 
-/// S→C component delta for one entity (reader `0x141f6c7a2`): the header (official: entity,
+/// S→C component delta for one entity (reader `0x141f6c922`): the header (official: entity,
 /// `0xffffffff`, 0, 0), a varuint length and that many bytes, which are the component index
 /// (the entity template's order) followed by the component's own delta (component vfunc
 /// +0xb0). See [`crate::entity::PlayerDelta`].

@@ -2,7 +2,7 @@
 //!
 //! Conventions (see `docs/protocol/framing.md`):
 //! - integers are big-endian (confirmed: the client byte-swaps with htons/htonl),
-//! - `wstring` (0.5.5e, client reader `0x141cfb3c0`): u16 character count, then per
+//! - `wstring` (client reader `0x141cfb540`): u16 character count, then per
 //!   character either one byte `< 0x80` (ASCII), `0x80` + u16 LE (BMP code unit) or `0xc0` +
 //!   u32 LE (any code point),
 //! - `astring`: u16 length in bytes, then raw bytes,
@@ -138,7 +138,7 @@ impl<'a> Reader<'a> {
         Ok(value)
     }
 
-    /// Signed counterpart of [`Self::varuint`] (client reader `0x141cfbfe0`): same shapes, the
+    /// Signed counterpart of [`Self::varuint`] (client reader `0x141cfc160`): same shapes, the
     /// top payload bit is the sign.
     pub fn varint(&mut self) -> DecodeResult<i32> {
         let first = self.u8()?;

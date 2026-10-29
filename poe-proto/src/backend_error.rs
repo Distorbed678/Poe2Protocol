@@ -3,7 +3,7 @@
 //! The client has one code table for every result code on the login connection
 //! (`0x0004` AuthenticationResult, `0x0013` CharacterCreated, `0x000d` DeleteCharacterResult):
 //! **code = row index + 1**, and it prints the row's `Text` for a code it shows as an error
-//! (`BackendError_GetText` `0x1425cb780`; see `docs/protocol/login.md`). The packets carry no
+//! (`BackendError_GetText` `0x1425cb9c0`; see `docs/protocol/login.md`). The packets carry no
 //! text, so the server only picks the code.
 //!
 //! The table is game data, so this module names the codes the server uses in one place, each

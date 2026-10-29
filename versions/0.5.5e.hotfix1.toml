@@ -1,8 +1,8 @@
 # Game client 0.5.5e Hotfix 1 (Steam app "Path of Exile 2", 2026-10-28): a client-only rebuild of
 # 0.5.5e ("Fixed a bug where minimap landscape geometry could fail to render correctly"; the servers
-# were not restarted). Same protocol, opcodes and deserializers as 0.5.5e (the opcode folder is
-# shared); 16 of 154,537 functions changed, the rest moved by small deltas
-# (dumps/0.5.5e.hotfix1/addr_map.tsv, scripts/re/addr_map.py). Game data: no table, .tgr, .dgr,
+# were not restarted), and since 2026-10-29 the only supported build (0.5.5e was dropped). Same
+# protocol, opcodes and deserializers as 0.5.5e; 16 of 154,537 functions changed, the rest moved by
+# small deltas (dumps/0.5.5e.hotfix1/addr_map.tsv, scripts/re/addr_map.py). Game data: no table, .tgr, .dgr,
 # .tdt, .tmd or .arm changed (texture headers, a few models and effects did).
 #
 # THE one place that defines a supported client build. It lives in Poe2Protocol
@@ -83,8 +83,8 @@ size = 466560
 
 # Opcode tables (login.toml, instance.toml, hnc.toml, inventories.tsv, deserializers.tsv).
 [protocol]
-# Shared with 0.5.5e: the hotfix changed no opcode and no deserializer (check-build fingerprints).
-opcodes = "modules/protocol/opcodes/0.5.5e"
+# The hotfix changed no opcode and no deserializer of 0.5.5e (check-build fingerprints).
+opcodes = "modules/protocol/opcodes/0.5.5e.hotfix1"
 
 # The client DLL's signature table and what `check-build` treats as required.
 [client_hook]
@@ -98,8 +98,8 @@ required_features = [
 ]
 
 # What the server learns about the client. The client sends no version string; the 32-byte
-# `client_hash` of 0x0003/0x0005 is a SHA-256 of the executable file (LoginClientHash_Get32, 0.5.5e
-# 0x1420e7580). Confirmed for this build in game on 2026-10-28: standalone token logins of the
+# `client_hash` of 0x0003/0x0005 is a SHA-256 of the executable file (LoginClientHash_Get32,
+# 0x1420e7700). Confirmed for this build in game on 2026-10-28: standalone token logins of the
 # hotfix client with this value listed and hashes_confirmed = false logged no "cannot be checked"
 # line, i.e. the client's hash is the exe's SHA-256. Other builds are refused
 # ([security] allow_unknown_client = false) with BackendErrors `InvalidProtocolVersion`.
