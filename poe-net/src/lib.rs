@@ -5,6 +5,7 @@
 //! - [`codec`]: big-endian reader/writer with PoE string encodings,
 //! - [`cipher`]: the [`cipher::StreamCipher`] abstraction (plain or encrypted streams),
 //! - [`hexdump`]: logging helper,
+//! - [`stats`]: process-wide byte counters of the connections,
 //! - `conn` (cargo feature `tokio`, off by default): a buffered TCP connection that applies a
 //!   cipher in both directions. Everything else works without tokio.
 
@@ -13,6 +14,7 @@ pub mod codec;
 #[cfg(feature = "tokio")]
 pub mod conn;
 pub mod hexdump;
+pub mod stats;
 
 pub use cipher::{KeyMaterial, Plain, Salsa20Stream, StreamCipher};
 pub use codec::{DecodeError, Reader, Writer};

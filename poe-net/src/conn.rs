@@ -79,6 +79,7 @@ impl Connection {
         self.inbound.reserve(8 * 1024);
         let n = self.stream.read_buf(&mut self.inbound).await?;
         if n > 0 {
+            crate::stats::add_in(n);
             self.recv_cipher.apply(&mut self.inbound[start..]);
             trace!(peer = %self.peer, len = n, "recv\n{}", hexdump(&self.inbound[start..]));
             if self.inbound.len() > self.max_buffer {
@@ -124,7 +125,9 @@ impl Connection {
         trace!(peer = %self.peer, len = data.len(), "send\n{}", hexdump(data));
         let mut out = data.to_vec();
         self.send_cipher.apply(&mut out);
-        self.stream.write_all(&out).await
+        self.stream.write_all(&out).await?;
+        crate::stats::add_out(out.len());
+        Ok(())
     }
 }
 
